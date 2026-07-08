@@ -621,9 +621,9 @@ export default function GuestChatPage() {
               {/* Footer Links */}
               <div className="flex justify-center gap-4 text-[10px] text-slate-400 dark:text-slate-500 font-bold select-none border-t pt-3" style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}>
                 <button type="button" onClick={() => handleQuickQuery("Tell me About Confluxaa")} className="hover:text-blue-500 transition cursor-pointer">About Us</button>
-                <span>•</span>
+                <span>{"•"}</span>
                 <button type="button" onClick={() => handleQuickQuery("Show me Careers at Confluxaa")} className="hover:text-blue-500 transition cursor-pointer">Careers</button>
-                <span>•</span>
+                <span>{"•"}</span>
                 <button type="button" onClick={() => handleQuickQuery("Do you have Case Studies?")} className="hover:text-blue-500 transition cursor-pointer">Case Studies</button>
               </div>
             </div>
