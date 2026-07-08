@@ -35,7 +35,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
           </svg>
         </button>
         <span className="hidden md:inline text-sm font-semibold text-slate-500 dark:text-slate-400">
-          Admin Dashboard
+          {user?.role === "superadmin" ? "Super Admin Dashboard" : "Admin Dashboard"}
         </span>
       </div>
 
