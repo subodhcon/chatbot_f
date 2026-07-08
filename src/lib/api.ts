@@ -1,5 +1,10 @@
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://chatbotb-production.up.railway.app/api/v1";
-const API_URL = rawApiUrl.replace(/^['"]|['"]$/g, "");
+const API_URL = rawApiUrl.replace(/^['"]|['"]$/g, "").trim();
+
+// Debug: log the API URL in development
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  console.log("[API] Using URL:", API_URL);
+}
 
 export interface LoginResponseData {
   access_token: string;
@@ -51,71 +56,99 @@ export const clearTokens = () => {
   }
 };
 
-export async function loginUser(email: string, password: string): Promise<ApiResponse<LoginResponseData>> {
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 20000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    return response;
+  } finally {
+    clearTimeout(id);
+  }
+}
 
-    // Safe JSON parsing: check content-type first
-    const contentType = response.headers.get("content-type") || "";
-    let data: any = null;
-    
-    if (contentType.includes("application/json")) {
-      data = await response.json();
-    } else {
-      const text = await response.text();
-      throw new Error(text || `HTTP Error ${response.status}`);
-    }
+export async function loginUser(email: string, password: string): Promise<ApiResponse<LoginResponseData>> {
+  const MAX_RETRIES = 2;
+  let lastError: unknown = null;
 
-    if (!response.ok) {
-      // Handle standard FastAPI error details format
-      let errMsg = "Authentication failed";
-      if (data && typeof data.detail === "string") {
-        errMsg = data.detail;
-      } else if (data && Array.isArray(data.detail)) {
-        errMsg = data.detail.map((d: any) => d.msg).join(", ");
-      } else if (data && data.error?.message) {
-        errMsg = data.error.message;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetchWithTimeout(
+        `${API_URL}/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        },
+        20000
+      );
+
+      const contentType = response.headers.get("content-type") || "";
+      let data: any = null;
+
+      if (contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(text || `HTTP Error ${response.status}`);
       }
 
-      return {
-        success: false,
-        data: null,
-        error: {
-          code: data?.error?.code || `HTTP_${response.status}`,
-          message: errMsg,
-          details: data,
-        },
-      };
-    }
+      if (!response.ok) {
+        let errMsg = "Authentication failed";
+        if (data && typeof data.detail === "string") {
+          errMsg = data.detail;
+        } else if (data && Array.isArray(data.detail)) {
+          errMsg = data.detail.map((d: any) => d.msg).join(", ");
+        } else if (data && data.error?.message) {
+          errMsg = data.error.message;
+        }
 
-    return data;
-  } catch (error: unknown) {
-    let message = "A connection issue occurred. Please check your network.";
-    const errString = String(error);
-    
-    // Detect standard CORS / Network Failures
-    if (errString.includes("Failed to fetch") || errString.includes("TypeError") || errString.includes("NetworkError")) {
-      message = "Connection to server failed. This may be due to a CORS policy block or the server being offline.";
-    } else if (error instanceof Error) {
-      message = error.message;
-    }
+        return {
+          success: false,
+          data: null,
+          error: {
+            code: data?.error?.code || `HTTP_${response.status}`,
+            message: errMsg,
+            details: data,
+          },
+        };
+      }
 
-    return {
-      success: false,
-      data: null,
-      error: {
-        code: "CONNECTION_FAILED",
-        message,
-        details: error,
-      },
-    };
+      return data;
+    } catch (error: unknown) {
+      lastError = error;
+      const errString = String(error);
+
+      if (errString.includes("AbortError") || errString.includes("abort")) {
+        break;
+      }
+
+      if (attempt < MAX_RETRIES) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        continue;
+      }
+    }
   }
+
+  const errString = String(lastError);
+  let message = "Unable to reach the server. Please check your internet connection.";
+  let code = "CONNECTION_FAILED";
+
+  if (errString.includes("AbortError") || errString.includes("abort")) {
+    message = "Request timed out. Please try again.";
+    code = "TIMEOUT";
+  } else if (errString.includes("Failed to fetch") || errString.includes("TypeError") || errString.includes("NetworkError")) {
+    message = "Network error. Please check your internet connection and try again.";
+    code = "NETWORK_ERROR";
+  } else if (lastError instanceof Error) {
+    message = lastError.message;
+  }
+
+  return {
+    success: false,
+    data: null,
+    error: { code, message, details: lastError },
+  };
 }
 
 export async function registerUser(
