@@ -1,6 +1,6 @@
 import { ApiResponse } from "@/lib/api";
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://chatbotb-production.up.railway.app/api/v1";
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://chatbot-proxy.subodhconfluxaa.workers.dev/api/v1";
 const API_URL = rawApiUrl.replace(/^['"]|['"]$/g, "");
 
 export interface PublicBot {
