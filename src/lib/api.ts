@@ -60,27 +60,56 @@ export async function loginUser(email: string, password: string): Promise<ApiRes
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await response.json();
+    // Safe JSON parsing: check content-type first
+    const contentType = response.headers.get("content-type") || "";
+    let data: any = null;
+    
+    if (contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      throw new Error(text || `HTTP Error ${response.status}`);
+    }
+
     if (!response.ok) {
+      // Handle standard FastAPI error details format
+      let errMsg = "Authentication failed";
+      if (data && typeof data.detail === "string") {
+        errMsg = data.detail;
+      } else if (data && Array.isArray(data.detail)) {
+        errMsg = data.detail.map((d: any) => d.msg).join(", ");
+      } else if (data && data.error?.message) {
+        errMsg = data.error.message;
+      }
+
       return {
         success: false,
         data: null,
         error: {
-          code: data.error?.code || "HTTP_ERROR",
-          message: data.error?.message || "Authentication failed",
-          details: data.error?.details || null,
+          code: data?.error?.code || `HTTP_${response.status}`,
+          message: errMsg,
+          details: data,
         },
       };
     }
 
     return data;
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "A network error occurred. Please try again.";
+    let message = "A connection issue occurred. Please check your network.";
+    const errString = String(error);
+    
+    // Detect standard CORS / Network Failures
+    if (errString.includes("Failed to fetch") || errString.includes("TypeError") || errString.includes("NetworkError")) {
+      message = "Connection to server failed. This may be due to a CORS policy block or the server being offline.";
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
     return {
       success: false,
       data: null,
       error: {
-        code: "NETWORK_ERROR",
+        code: "CONNECTION_FAILED",
         message,
         details: error,
       },
