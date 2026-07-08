@@ -144,11 +144,11 @@ export default function KnowledgeBasePage() {
       };
 
       socket.onerror = (err) => {
-        console.error("Ingestion WebSocket error:", err);
+        console.error("Ingestion WebSocket error occurred");
       };
 
-      socket.onclose = () => {
-        console.log("Ingestion WebSocket closed, attempting reconnect...");
+      socket.onclose = (event) => {
+        console.error(`Ingestion WebSocket closed. Code: ${event.code}, Reason: ${event.reason || "None"}. Attempting reconnect...`);
         reconnectTimeout = setTimeout(connectWS, 3000);
       };
     };
