@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Bot, Send, Loader2, AlertCircle, PhoneCall, Menu, Trash2, Info, Calendar, Briefcase, Layers, LayoutGrid, Monitor, Cloud, Eye, Cpu, Gamepad2, Shield, MessageSquare, Mail, User, Users } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { publicChatService, PublicBot, CitationItem } from "@/services/public_chat";
 import MessageCitations from "@/components/MessageCitations";
 import FeedbackComponent from "@/components/FeedbackComponent";
@@ -22,6 +23,22 @@ export default function GuestChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [consecutiveFailures, setConsecutiveFailures] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const connectMenuItems = [
+    { label: "Book a Meeting", query: "I want to Book a Meeting", desc: "Schedule a call", icon: Calendar },
+    { label: "Careers", query: "Are there any job openings / Careers?", desc: "Join our team", icon: Briefcase }
+  ];
+
+  const techServicesMenuItems = [
+    { label: "AI & ML Solutions", query: "Tell me about AI & ML Solutions", desc: "Intelligent automation", icon: Layers },
+    { label: "Blockchain", query: "Tell me about Blockchain Services", desc: "Web3 solutions", icon: LayoutGrid },
+    { label: "Web & Mobile", query: "Tell me about Web & Mobile App Development", desc: "App development", icon: Monitor },
+    { label: "Cloud & DevOps", query: "Tell me about Cloud & DevOps Infrastructure Services", desc: "Infrastructure", icon: Cloud },
+    { label: "AR/VR & Metaverse", query: "Tell me about AR/VR & Metaverse Services", desc: "Immersive tech", icon: Eye },
+    { label: "IoT Solutions", query: "Tell me about IoT Solutions", desc: "Smart devices", icon: Cpu },
+    { label: "Game Development", query: "Tell me about Game Development", desc: "Gaming solutions", icon: Gamepad2 },
+    { label: "Cybersecurity", query: "Tell me about Cybersecurity Services", desc: "Security services", icon: Shield }
+  ];
 
   const handleClearChat = () => {
     setMessages([
@@ -436,147 +453,52 @@ export default function GuestChatPage() {
                 borderColor: isLight ? "#e2e8f0" : "#1e293b",
               }}
             >
-              {/* Section 1: Connect */}
-              <div>
-                <h3 className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-2">Connect</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("I want to Book a Meeting")}
-                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
-                      <Calendar className="h-5 w-5" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Book a Meeting</span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">Schedule a call</span>
-                  </button>
+              {(() => {
+                const rawSections = bot.extra_config?.quick_links;
+                const sections = Array.isArray(rawSections) && rawSections.length > 0 ? rawSections : [
+                  {
+                    section_title: "Connect",
+                    items: connectMenuItems
+                  },
+                  {
+                    section_title: "Technology Services",
+                    items: techServicesMenuItems
+                  }
+                ];
 
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("Are there any job openings / Careers?")}
-                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
-                      <Briefcase className="h-5 w-5" />
+                return sections.map((section: any, sIdx: number) => (
+                  <div key={sIdx}>
+                    <h3 className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-2">
+                      {section.section_title}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Array.isArray(section.items) && section.items.map((item: any, idx: number) => {
+                        const Icon = typeof item.icon === "string" 
+                          ? ((LucideIcons as any)[item.icon] || LucideIcons.HelpCircle)
+                          : (item.icon || LucideIcons.HelpCircle);
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleQuickQuery(item.query)}
+                            className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer"
+                            style={{
+                              borderColor: isLight ? "#f1f5f9" : "#1e293b",
+                              backgroundColor: isLight ? "#ffffff" : "rgba(30, 41, 59, 0.4)"
+                            }}
+                          >
+                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center mb-2 ${isLight ? 'bg-blue-50 text-blue-500' : 'bg-blue-950/40 text-blue-400'}`}>
+                              <Icon className="h-5 w-5" />
+                            </div>
+                            <span className={`text-xs font-bold ${isLight ? 'text-slate-800' : 'text-slate-100'}`}>{item.label}</span>
+                            <span className={`text-[9px] mt-0.5 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>{item.desc}</span>
+                          </button>
+                        );
+                      })}
                     </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Careers</span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">Join our team</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Section 2: Technology Services */}
-              <div>
-                <h3 className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-2">Technology Services</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("Tell me about AI & ML Solutions")}
-                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
-                      <Layers className="h-5 w-5" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">AI & ML Solutions</span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">Intelligent automation</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("Tell me about Blockchain Services")}
-                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
-                      <LayoutGrid className="h-5 w-5" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Blockchain</span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">Web3 solutions</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("Tell me about Web & Mobile App Development")}
-                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
-                      <Monitor className="h-5 w-5" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Web & Mobile</span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">App development</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("Tell me about Cloud & DevOps Infrastructure Services")}
-                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
-                      <Cloud className="h-5 w-5" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Cloud & DevOps</span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">Infrastructure</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("Tell me about AR/VR & Metaverse Services")}
-                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
-                      <Eye className="h-5 w-5" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">AR/VR & Metaverse</span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">Immersive tech</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("Tell me about IoT Solutions")}
-                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
-                      <Cpu className="h-5 w-5" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">IoT Solutions</span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">Smart devices</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("Tell me about Game Development")}
-                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
-                      <Gamepad2 className="h-5 w-5" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Game Development</span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">Gaming solutions</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("Tell me about Cybersecurity Services")}
-                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
-                      <Shield className="h-5 w-5" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Cybersecurity</span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">Security services</span>
-                  </button>
-                </div>
-              </div>
+                  </div>
+                ));
+              })()}
 
               {/* Section 3: Quick Actions */}
               <div>
@@ -585,25 +507,31 @@ export default function GuestChatPage() {
                   <button
                     type="button"
                     onClick={() => handleQuickQuery("I need to speak to an agent")}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition hover:scale-[1.01] active:scale-[0.98] cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
+                    style={{
+                      borderColor: isLight ? "#f1f5f9" : "#1e293b",
+                      backgroundColor: isLight ? "#ffffff" : "rgba(30, 41, 59, 0.4)"
+                    }}
                   >
-                    <div className="h-7 w-7 rounded-lg bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 shrink-0">
+                    <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${isLight ? 'bg-blue-50 text-blue-500' : 'bg-blue-950/40 text-blue-400'}`}>
                       <MessageSquare className="h-4 w-4" />
                     </div>
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Talk to Agent</span>
+                    <span className={`text-xs font-bold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>Talk to Agent</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleQuickQuery("How do I contact Confluxaa?")}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition hover:scale-[1.01] active:scale-[0.98] cursor-pointer bg-white dark:bg-slate-900"
-                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
+                    style={{
+                      borderColor: isLight ? "#f1f5f9" : "#1e293b",
+                      backgroundColor: isLight ? "#ffffff" : "rgba(30, 41, 59, 0.4)"
+                    }}
                   >
-                    <div className="h-7 w-7 rounded-lg bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 shrink-0">
+                    <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${isLight ? 'bg-blue-50 text-blue-500' : 'bg-blue-950/40 text-blue-400'}`}>
                       <Mail className="h-4 w-4" />
                     </div>
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Contact Us</span>
+                    <span className={`text-xs font-bold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>Contact Us</span>
                   </button>
 
                   {/* Clear Chat option inline for utility */}

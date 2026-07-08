@@ -60,7 +60,10 @@ export default function LoginPage() {
     }
 
     // Handle token storage and state updates via Zustand
-    login(response.data.user, response.data.access_token, response.data.refresh_token);
+    login({
+      ...response.data.user,
+      role: (response.data.user as any).role || "user"
+    }, response.data.access_token, response.data.refresh_token);
 
     // Handle Remember Me email persistence
     if (typeof window !== "undefined") {

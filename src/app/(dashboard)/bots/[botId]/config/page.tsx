@@ -9,7 +9,10 @@ import {
   AlertCircle, 
   Loader2, 
   MessageSquare, 
-  Smile
+  Smile,
+  Plus,
+  Trash2,
+  FolderPlus
 } from "lucide-react";
 import Link from "next/link";
 import { botService, Bot as BotType } from "@/services/bot";
@@ -40,6 +43,7 @@ export default function BotConfigPage({ params }: PageProps) {
   const [tone, setTone] = useState("friendly");
   const [widgetColor, setWidgetColor] = useState("#6366f1");
   const [widgetTheme, setWidgetTheme] = useState("dark");
+  const [quickLinks, setQuickLinks] = useState<any[]>([]);
 
   // Live Validation States
   const [greetingError, setGreetingError] = useState<string | null>(null);
@@ -93,6 +97,7 @@ export default function BotConfigPage({ params }: PageProps) {
         const extra = config.extra_config || {};
         setWidgetColor(extra.widget_color || "#6366f1");
         setWidgetTheme(extra.widget_theme || "dark");
+        setQuickLinks(extra.quick_links || []);
       } else {
         setError(configResponse.error?.message || "Failed to load bot configuration.");
       }
@@ -160,6 +165,7 @@ export default function BotConfigPage({ params }: PageProps) {
         extra_config: {
           widget_color: widgetColor,
           widget_theme: widgetTheme,
+          quick_links: quickLinks,
         }
       });
 
@@ -411,6 +417,210 @@ export default function BotConfigPage({ params }: PageProps) {
                           <option value="dark">Dark Theme</option>
                           <option value="light">Light Theme</option>
                         </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Divider line */}
+                  <div className="h-px bg-slate-200 dark:bg-slate-800 my-6" />
+
+                  {/* Quick Links Configurator Section */}
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">
+                        Quick Links Menu Configurator
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Configure quick action cards that users can click inside the chatbot menu (e.g. &quot;Careers&quot;, &quot;Connect&quot;).
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {quickLinks.map((category, catIdx) => (
+                        <div key={catIdx} className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/30 space-y-4">
+                          <div className="flex justify-between items-center gap-4">
+                            <input
+                              type="text"
+                              value={category.section_title || ""}
+                              onChange={(e) => {
+                                const updated = [...quickLinks];
+                                updated[catIdx].section_title = e.target.value;
+                                setQuickLinks(updated);
+                              }}
+                              placeholder="Category Name (e.g. Connect)"
+                              className="flex-1 font-bold text-sm bg-transparent border-b border-slate-300 dark:border-slate-700 outline-none pb-1 text-slate-900 dark:text-white focus:border-indigo-500"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                const updated = quickLinks.filter((_, idx) => idx !== catIdx);
+                                setQuickLinks(updated);
+                              }}
+                              className="text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 h-8 w-8 rounded-lg"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {category.items?.map((item: any, itemIdx: number) => (
+                              <div key={itemIdx} className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-lg p-3 space-y-2.5 relative group">
+                                <div className="flex justify-between items-start gap-2">
+                                  <div className="space-y-1 flex-1">
+                                    <input
+                                      type="text"
+                                      value={item.label || ""}
+                                      onChange={(e) => {
+                                        const updated = [...quickLinks];
+                                        updated[catIdx].items[itemIdx].label = e.target.value;
+                                        setQuickLinks(updated);
+                                      }}
+                                      placeholder="Card Label"
+                                      className="w-full font-bold text-xs bg-transparent border-none outline-none text-slate-900 dark:text-white"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={item.desc || ""}
+                                      onChange={(e) => {
+                                        const updated = [...quickLinks];
+                                        updated[catIdx].items[itemIdx].desc = e.target.value;
+                                        setQuickLinks(updated);
+                                      }}
+                                      placeholder="Card Subtext"
+                                      className="w-full text-[10px] text-slate-400 bg-transparent border-none outline-none"
+                                    />
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      const updated = [...quickLinks];
+                                      updated[catIdx].items = updated[catIdx].items.filter((_: any, idx: number) => idx !== itemIdx);
+                                      setQuickLinks(updated);
+                                    }}
+                                    className="text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 h-7 w-7 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-slate-900">
+                                  <div className="space-y-1">
+                                    <span className="text-[8px] font-semibold uppercase tracking-wider text-slate-400">Trigger Query</span>
+                                    <input
+                                      type="text"
+                                      value={item.query || ""}
+                                      onChange={(e) => {
+                                        const updated = [...quickLinks];
+                                        updated[catIdx].items[itemIdx].query = e.target.value;
+                                        setQuickLinks(updated);
+                                      }}
+                                      placeholder="User question text"
+                                      className="w-full text-[10px] bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded border border-slate-200 dark:border-slate-800 outline-none text-slate-700 dark:text-slate-300"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <span className="text-[8px] font-semibold uppercase tracking-wider text-slate-400">Lucide Icon</span>
+                                    <select
+                                      value={item.icon || "HelpCircle"}
+                                      onChange={(e) => {
+                                        const updated = [...quickLinks];
+                                        updated[catIdx].items[itemIdx].icon = e.target.value;
+                                        setQuickLinks(updated);
+                                      }}
+                                      className="w-full text-[10px] bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded border border-slate-200 dark:border-slate-800 outline-none text-slate-700 dark:text-slate-300"
+                                    >
+                                      <option value="Calendar">Calendar</option>
+                                      <option value="Briefcase">Careers (Briefcase)</option>
+                                      <option value="Layers">AI & ML (Layers)</option>
+                                      <option value="LayoutGrid">Blockchain</option>
+                                      <option value="Monitor">Web & Mobile</option>
+                                      <option value="Cloud">DevOps (Cloud)</option>
+                                      <option value="Eye">AR/VR (Eye)</option>
+                                      <option value="Cpu">IoT (Cpu)</option>
+                                      <option value="Gamepad2">Gaming</option>
+                                      <option value="Shield">Cybersecurity</option>
+                                      <option value="ShoppingBag">Shopping Bag</option>
+                                      <option value="HelpCircle">Help Circle</option>
+                                      <option value="Phone">Phone</option>
+                                      <option value="Globe">Globe</option>
+                                      <option value="Mail">Mail</option>
+                                      <option value="Info">Info</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const updated = [...quickLinks];
+                                if (!updated[catIdx].items) updated[catIdx].items = [];
+                                updated[catIdx].items.push({
+                                  label: "New Card",
+                                  desc: "Description text",
+                                  query: "What is Confluxaa?",
+                                  icon: "HelpCircle"
+                                });
+                                setQuickLinks(updated);
+                              }}
+                              className="border-dashed border-slate-300 hover:border-indigo-500 text-xs font-semibold h-24 flex flex-col items-center justify-center gap-1.5 rounded-lg transition"
+                            >
+                              <Plus className="h-4 w-4 text-slate-400" />
+                              Add Card
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setQuickLinks([...quickLinks, { section_title: "New Category", items: [] }]);
+                          }}
+                          className="text-xs font-bold gap-1.5"
+                        >
+                          <FolderPlus className="h-4 w-4" />
+                          Add Category
+                        </Button>
+
+                        {quickLinks.length === 0 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setQuickLinks([
+                                {
+                                  section_title: "Connect",
+                                  items: [
+                                    { label: "Book a Meeting", query: "I want to Book a Meeting", desc: "Schedule a call", icon: "Calendar" },
+                                    { label: "Careers", query: "Are there any job openings / Careers?", desc: "Join our team", icon: "Briefcase" }
+                                  ]
+                                },
+                                {
+                                  section_title: "Technology Services",
+                                  items: [
+                                    { label: "AI & ML Solutions", query: "Tell me about AI & ML Solutions", desc: "Intelligent automation", icon: "Layers" },
+                                    { label: "Blockchain", query: "Tell me about Blockchain Services", desc: "Web3 solutions", icon: "LayoutGrid" }
+                                  ]
+                                }
+                              ]);
+                            }}
+                            className="text-xs font-bold gap-1.5 text-indigo-600 hover:text-indigo-700"
+                          >
+                            Load Default IT Menu Template
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
