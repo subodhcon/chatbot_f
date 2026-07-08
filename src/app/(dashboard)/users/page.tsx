@@ -223,6 +223,32 @@ export default function UsersPage() {
     }
   };
 
+  // Delete User Handler (Soft-delete/deactivate via backend endpoint)
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (userId === currentUser?.id) {
+      alert("You cannot delete your own account.");
+      return;
+    }
+    if (!confirm(`Are you sure you want to delete user "${userName}"? This will deactivate their account.`)) {
+      return;
+    }
+    setActionLoading(userId);
+    try {
+      const response = await fetchWithAuth<any>(`/users/${userId}`, {
+        method: "DELETE"
+      });
+      if (response.success) {
+        await loadData();
+      } else {
+        alert(response.error?.message || "Failed to delete user.");
+      }
+    } catch (e) {
+      alert("Failed to delete user.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   // Assign Bot Handler
   const handleAssignBot = async (userId: string, botId: string) => {
     setActionLoading(`${userId}-assign-${botId}`);
@@ -534,6 +560,16 @@ export default function UsersPage() {
                       >
                         <Settings className="h-4 w-4" />
                       </button>
+                      {user.id !== currentUser?.id && (
+                        <button
+                          disabled={actionLoading !== null}
+                          onClick={() => handleDeleteUser(user.id, user.name || user.email)}
+                          className="rounded p-1.5 hover:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
+                          title="Delete User"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
