@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
-import { Bot, Send, Loader2, AlertCircle, PhoneCall } from "lucide-react";
+import { Bot, Send, Loader2, AlertCircle, PhoneCall, Menu, Trash2, Info, Calendar, Briefcase, Layers, LayoutGrid, Monitor, Cloud, Eye, Cpu, Gamepad2, Shield, MessageSquare, Mail, User, Users } from "lucide-react";
 import { publicChatService, PublicBot, CitationItem } from "@/services/public_chat";
 import MessageCitations from "@/components/MessageCitations";
 import FeedbackComponent from "@/components/FeedbackComponent";
@@ -20,6 +20,46 @@ export default function GuestChatPage() {
   const [isLoadingBot, setIsLoadingBot] = useState(true);
   const [isReplying, setIsReplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [consecutiveFailures, setConsecutiveFailures] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleClearChat = () => {
+    setMessages([
+      { sender: "bot", content: bot?.greeting_message || "Welcome! Please state your inquiry so that I may provide assistance.", time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+    ]);
+    setConsecutiveFailures(0);
+    setMenuOpen(false);
+  };
+
+  const formatMessageContent = (text: string) => {
+    if (!text) return "";
+    
+    // Split by newlines
+    const lines = text.split("\n");
+    let inList = false;
+    const formattedLines = [];
+
+    for (let line of lines) {
+      let trimmed = line.trim();
+      
+      // Detect list items
+      if (trimmed.startsWith("* ") || trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
+        // Strip the list token
+        const cleanText = trimmed.replace(/^[\*\-\•]\s+/, "");
+        
+        // Parse bold markers inside the list item
+        const parsedText = cleanText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        
+        formattedLines.push(`<li class="ml-4 list-disc pl-1 my-1">${parsedText}</li>`);
+      } else {
+        // Parse bold markers in normal paragraph text
+        const parsedText = line.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        formattedLines.push(`<p class="my-1 min-h-[1em]">${parsedText}</p>`);
+      }
+    }
+
+    return formattedLines.join("");
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -91,6 +131,53 @@ export default function GuestChatPage() {
     initChat();
   }, [botId]);
 
+  const handleQuickQuery = async (queryText: string) => {
+    if (!conversationId || isReplying) return;
+    setMenuOpen(false);
+    
+    // Add user message to UI
+    setMessages((prev) => [
+      ...prev,
+      { sender: "user", content: queryText, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+    ]);
+
+    setIsReplying(true);
+
+    try {
+      const res = await publicChatService.sendGuestMessage(conversationId, queryText);
+      if (res.success && res.data) {
+        const isEscalation = res.data!.escalation_eligible;
+        const nextFailures = isEscalation ? consecutiveFailures + 1 : 0;
+        setConsecutiveFailures(nextFailures);
+        const shouldShowEscalationButton = nextFailures >= 2;
+
+        setMessages((prev) => [
+          ...prev,
+          { 
+            id: res.data!.id,
+            sender: "bot", 
+            content: res.data!.content, 
+            citations: res.data!.citations,
+            escalation_eligible: isEscalation && shouldShowEscalationButton,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+          }
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "bot", content: "Sorry, I encountered an error while processing your request. Please try again." }
+        ]);
+      }
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", content: "A connection issue occurred. Please check your network." }
+      ]);
+    } finally {
+      setIsReplying(false);
+    }
+  };
+
   // Handle message submission
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,6 +197,11 @@ export default function GuestChatPage() {
     try {
       const res = await publicChatService.sendGuestMessage(conversationId, userText);
       if (res.success && res.data) {
+        const isEscalation = res.data!.escalation_eligible;
+        const nextFailures = isEscalation ? consecutiveFailures + 1 : 0;
+        setConsecutiveFailures(nextFailures);
+        const shouldShowEscalationButton = nextFailures >= 2;
+
         setMessages((prev) => [
           ...prev,
           { 
@@ -117,7 +209,7 @@ export default function GuestChatPage() {
             sender: "bot", 
             content: res.data!.content, 
             citations: res.data!.citations,
-            escalation_eligible: res.data!.escalation_eligible,
+            escalation_eligible: isEscalation && shouldShowEscalationButton,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
           }
         ]);
@@ -254,7 +346,10 @@ export default function GuestChatPage() {
                           }
                     }
                   >
-                    <p className="whitespace-pre-line">{msg.content}</p>
+                    <div 
+                      className="text-xs leading-relaxed space-y-1.5"
+                      dangerouslySetInnerHTML={{ __html: formatMessageContent(msg.content) }}
+                    />
                     {isBot && <MessageCitations citations={msg.citations} />}
                     {isBot && msg.id && conversationId && (
                       <FeedbackComponent
@@ -326,30 +421,256 @@ export default function GuestChatPage() {
         {/* Input */}
         <form 
           onSubmit={handleSendMessage} 
-          className="p-3 border-t flex gap-2 shrink-0"
+          className="p-3 border-t flex gap-2 shrink-0 relative"
           style={{
             backgroundColor: isLight ? "#ffffff" : "#0f172a",
             borderColor: isLight ? "#e2e8f0" : "#1e293b",
           }}
         >
-          <input
-            type="text"
-            required
-            placeholder="Type a message..."
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            disabled={isReplying}
-            className="flex-1 border rounded-xl px-4 py-2.5 text-xs placeholder-slate-500 outline-none transition disabled:opacity-50"
+          {/* Rich Glassmorphic Grid Menu Hub (Responsive) */}
+          {menuOpen && (
+            <div 
+              className="absolute bottom-16 left-3 right-3 max-h-[380px] sm:max-h-[440px] overflow-y-auto rounded-2xl border p-4 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-3 duration-200 z-50 flex flex-col gap-4 text-slate-800 dark:text-slate-200"
+              style={{
+                backgroundColor: isLight ? "rgba(255, 255, 255, 0.95)" : "rgba(15, 23, 42, 0.95)",
+                borderColor: isLight ? "#e2e8f0" : "#1e293b",
+              }}
+            >
+              {/* Section 1: Connect */}
+              <div>
+                <h3 className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-2">Connect</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("I want to Book a Meeting")}
+                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
+                      <Calendar className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Book a Meeting</span>
+                    <span className="text-[9px] text-slate-400 mt-0.5">Schedule a call</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("Are there any job openings / Careers?")}
+                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
+                      <Briefcase className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Careers</span>
+                    <span className="text-[9px] text-slate-400 mt-0.5">Join our team</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Section 2: Technology Services */}
+              <div>
+                <h3 className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-2">Technology Services</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("Tell me about AI & ML Solutions")}
+                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
+                      <Layers className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">AI & ML Solutions</span>
+                    <span className="text-[9px] text-slate-400 mt-0.5">Intelligent automation</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("Tell me about Blockchain Services")}
+                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
+                      <LayoutGrid className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Blockchain</span>
+                    <span className="text-[9px] text-slate-400 mt-0.5">Web3 solutions</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("Tell me about Web & Mobile App Development")}
+                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
+                      <Monitor className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Web & Mobile</span>
+                    <span className="text-[9px] text-slate-400 mt-0.5">App development</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("Tell me about Cloud & DevOps Infrastructure Services")}
+                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
+                      <Cloud className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Cloud & DevOps</span>
+                    <span className="text-[9px] text-slate-400 mt-0.5">Infrastructure</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("Tell me about AR/VR & Metaverse Services")}
+                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
+                      <Eye className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">AR/VR & Metaverse</span>
+                    <span className="text-[9px] text-slate-400 mt-0.5">Immersive tech</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("Tell me about IoT Solutions")}
+                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
+                      <Cpu className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">IoT Solutions</span>
+                    <span className="text-[9px] text-slate-400 mt-0.5">Smart devices</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("Tell me about Game Development")}
+                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
+                      <Gamepad2 className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Game Development</span>
+                    <span className="text-[9px] text-slate-400 mt-0.5">Gaming solutions</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("Tell me about Cybersecurity Services")}
+                    className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-2">
+                      <Shield className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Cybersecurity</span>
+                    <span className="text-[9px] text-slate-400 mt-0.5">Security services</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Section 3: Quick Actions */}
+              <div>
+                <h3 className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-2">Quick Actions</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("I need to speak to an agent")}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition hover:scale-[1.01] active:scale-[0.98] cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-7 w-7 rounded-lg bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 shrink-0">
+                      <MessageSquare className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Talk to Agent</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickQuery("How do I contact Confluxaa?")}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition hover:scale-[1.01] active:scale-[0.98] cursor-pointer bg-white dark:bg-slate-900"
+                    style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}
+                  >
+                    <div className="h-7 w-7 rounded-lg bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400 shrink-0">
+                      <Mail className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Contact Us</span>
+                  </button>
+
+                  {/* Clear Chat option inline for utility */}
+                  <button
+                    type="button"
+                    onClick={handleClearChat}
+                    className="col-span-2 flex items-center justify-center gap-2.5 p-2.5 rounded-xl border text-left transition hover:scale-[1.01] active:scale-[0.98] cursor-pointer bg-rose-500/10 border-rose-500/20 text-rose-500"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="text-xs font-bold">Clear Chat History</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Footer Links */}
+              <div className="flex justify-center gap-4 text-[10px] text-slate-400 dark:text-slate-500 font-bold select-none border-t pt-3" style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}>
+                <button type="button" onClick={() => handleQuickQuery("Tell me About Confluxaa")} className="hover:text-blue-500 transition cursor-pointer">About Us</button>
+                <span>•</span>
+                <button type="button" onClick={() => handleQuickQuery("Show me Careers at Confluxaa")} className="hover:text-blue-500 transition cursor-pointer">Careers</button>
+                <span>•</span>
+                <button type="button" onClick={() => handleQuickQuery("Do you have Case Studies?")} className="hover:text-blue-500 transition cursor-pointer">Case Studies</button>
+              </div>
+            </div>
+          )}
+
+          {/* Unified Input Pill Wrapper */}
+          <div 
+            className="flex-1 flex items-center border rounded-full pl-2 pr-1 py-1 transition focus-within:ring-2 focus-within:ring-offset-0"
             style={{
               backgroundColor: isLight ? "#f8fafc" : "#020617",
               borderColor: isLight ? "#cbd5e1" : "#1e293b",
-              color: isLight ? "#0f172a" : "#f8fafc",
+              boxShadow: "none",
             }}
-          />
+          >
+            {/* Left Menu Button (Circular Pill Icon) */}
+            <div className="flex items-center">
+              <button
+                type="button"
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="active:scale-95 h-7 w-7 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800"
+                style={{
+                  color: isLight ? "#475569" : "#94a3b8",
+                  backgroundColor: isLight ? "#e2e8f0" : "#1e293b",
+                }}
+              >
+                <Menu className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            <input
+              type="text"
+              required
+              placeholder="Type a message..."
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              disabled={isReplying}
+              className="flex-1 bg-transparent px-3 py-1 text-xs placeholder-slate-500 outline-none transition disabled:opacity-50 border-none"
+              style={{
+                color: isLight ? "#0f172a" : "#f8fafc",
+              }}
+            />
+          </div>
+
           <button
             type="submit"
             disabled={isReplying || !inputMessage.trim()}
-            className="active:scale-95 disabled:scale-100 p-2.5 rounded-xl text-white transition flex items-center justify-center disabled:opacity-50 shrink-0 cursor-pointer"
+            className="active:scale-95 disabled:scale-100 p-2.5 rounded-full text-white transition flex items-center justify-center disabled:opacity-50 shrink-0 cursor-pointer"
             style={{
               backgroundColor: widgetColor,
             }}
