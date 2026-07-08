@@ -173,6 +173,24 @@ export async function fetchWithAuth<T>(url: string, options: RequestInit = {}): 
       headers,
     });
 
+    // Helper to safely parse JSON response
+    const safeParse = async (res: Response) => {
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        return await res.json();
+      }
+      const text = await res.text();
+      return {
+        success: false,
+        data: null,
+        error: {
+          code: `HTTP_${res.status}`,
+          message: text.substring(0, 150) || `HTTP Error ${res.status}`,
+          details: null,
+        }
+      };
+    };
+
     // Handle 401 token refresh scenario
     if (response.status === 401) {
       const refreshToken = getRefreshToken();
@@ -186,7 +204,7 @@ export async function fetchWithAuth<T>(url: string, options: RequestInit = {}): 
         });
 
         if (refreshResponse.ok) {
-          const refreshData = await refreshResponse.json();
+          const refreshData = await safeParse(refreshResponse);
           if (refreshData.success && refreshData.data) {
             setTokens(refreshData.data.access_token, refreshData.data.refresh_token);
             // Retry the original request
@@ -195,7 +213,7 @@ export async function fetchWithAuth<T>(url: string, options: RequestInit = {}): 
               ...options,
               headers,
             });
-            return await retryResponse.json();
+            return await safeParse(retryResponse);
           }
         }
       }
@@ -207,7 +225,7 @@ export async function fetchWithAuth<T>(url: string, options: RequestInit = {}): 
       }
     }
 
-    return await response.json();
+    return await safeParse(response);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "API request failed";
     return {
