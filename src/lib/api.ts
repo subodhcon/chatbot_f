@@ -1,4 +1,5 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://chatbotb-production.up.railway.app/api/v1";
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://chatbotb-production.up.railway.app/api/v1";
+const API_URL = rawApiUrl.replace(/^['"]|['"]$/g, "");
 
 export interface LoginResponseData {
   access_token: string;
