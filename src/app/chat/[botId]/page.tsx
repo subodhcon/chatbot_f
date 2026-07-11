@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Bot, Send, Loader2, AlertCircle, PhoneCall, Menu, Trash2, Info, Calendar, Briefcase, Layers, LayoutGrid, Monitor, Cloud, Eye, Cpu, Gamepad2, Shield, MessageSquare, Mail, User, Users } from "lucide-react";
