@@ -269,35 +269,48 @@ export default function GuestChatPage() {
 
   const isLight = bot.extra_config?.widget_theme === "light";
   const widgetColor = bot.extra_config?.widget_color || "#6366f1";
-
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-0 sm:p-4 md:p-6 transition-all duration-300"
+      className="min-h-screen flex items-center justify-center p-0 sm:p-4 md:p-6 transition-all duration-300 relative overflow-hidden"
       style={{
         backgroundColor: isLight ? "#f8fafc" : "#020617",
       }}
     >
+      {/* Decorative Premium Mesh Gradients */}
       <div 
-        className="max-w-[480px] w-full border sm:rounded-2xl shadow-xl overflow-hidden h-screen sm:h-[680px] flex flex-col justify-between"
+        className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full blur-[120px] pointer-events-none opacity-30 transition-all duration-500"
         style={{
-          backgroundColor: isLight ? "#ffffff" : "#0f172a",
-          borderColor: isLight ? "#e2e8f0" : "#1e293b",
+          background: `radial-gradient(circle, ${widgetColor} 0%, transparent 70%)`
+        }}
+      />
+      <div 
+        className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full blur-[120px] pointer-events-none opacity-20 transition-all duration-500"
+        style={{
+          background: `radial-gradient(circle, ${widgetColor} 0%, transparent 70%)`
+        }}
+      />
+
+      <div 
+        className="max-w-[480px] w-full border sm:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden h-screen sm:h-[700px] flex flex-col justify-between backdrop-blur-md relative z-10 transition-all"
+        style={{
+          backgroundColor: isLight ? "rgba(255, 255, 255, 0.9)" : "rgba(15, 23, 42, 0.85)",
+          borderColor: isLight ? "rgba(226, 232, 240, 0.8)" : "rgba(30, 41, 59, 0.8)",
           color: isLight ? "#0f172a" : "#ffffff",
         }}
       >
         
         {/* Header */}
         <div 
-          className="p-4 border-b flex items-center gap-3 shrink-0"
+          className="p-4 border-b flex items-center gap-3 shrink-0 backdrop-blur-md"
           style={{
-            backgroundColor: isLight ? "#f1f5f9" : "#1e293b",
-            borderColor: isLight ? "#e2e8f0" : "#334155",
+            backgroundColor: isLight ? "rgba(241, 245, 249, 0.85)" : "rgba(30, 41, 59, 0.7)",
+            borderColor: isLight ? "rgba(226, 232, 240, 0.8)" : "rgba(51, 65, 85, 0.6)",
           }}
         >
           <div 
-            className="h-10 w-10 rounded-2xl flex items-center justify-center border shrink-0 overflow-hidden"
+            className="h-11 w-11 rounded-2xl flex items-center justify-center border shrink-0 overflow-hidden shadow-inner"
             style={{
-              backgroundColor: `${widgetColor}20`,
+              backgroundColor: `${widgetColor}15`,
               borderColor: `${widgetColor}20`,
               color: widgetColor,
             }}
@@ -309,10 +322,10 @@ export default function GuestChatPage() {
               <Bot className="h-6 w-6" />
             )}
           </div>
-          <div className="overflow-hidden">
-            <h2 className="text-sm font-bold truncate" style={{ color: isLight ? "#0f172a" : "#ffffff" }}>{bot.name}</h2>
+          <div className="overflow-hidden flex-1">
+            <h2 className="text-sm font-bold tracking-tight truncate" style={{ color: isLight ? "#0f172a" : "#ffffff" }}>{bot.name}</h2>
             <p className="text-[10px] flex items-center gap-1.5 font-medium" style={{ color: isLight ? "#475569" : "#94a3b8" }}>
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
               Online
             </p>
           </div>
@@ -320,9 +333,9 @@ export default function GuestChatPage() {
 
         {/* Message Logs */}
         <div 
-          className="flex-1 p-4 overflow-y-auto space-y-4 flex flex-col"
+          className="flex-1 p-4 overflow-y-auto space-y-4 flex flex-col scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800"
           style={{
-            backgroundColor: isLight ? "#f8fafc" : "#020617",
+            backgroundColor: isLight ? "rgba(248, 250, 252, 0.4)" : "rgba(2, 6, 23, 0.4)",
           }}
         >
           {messages.map((msg, i) => {
@@ -330,36 +343,37 @@ export default function GuestChatPage() {
             return (
               <div
                 key={i}
-                className={`flex gap-2.5 max-w-[85%] ${
+                className={`flex gap-3 max-w-[88%] ${
                   isBot ? "mr-auto" : "ml-auto flex-row-reverse"
-                }`}
+                } animate-in fade-in slide-in-from-bottom-2 duration-300`}
               >
                 <div
-                  className={`h-7 w-7 rounded-xl shrink-0 flex items-center justify-center text-xs border`}
+                  className={`h-7 w-7 rounded-lg shrink-0 flex items-center justify-center text-[10px] border shadow-sm`}
                   style={{
-                    backgroundColor: isBot ? `${widgetColor}10` : (isLight ? "#e2e8f0" : "#334155"),
-                    borderColor: isBot ? `${widgetColor}20` : (isLight ? "#cbd5e1" : "#1e293b"),
-                    color: isBot ? widgetColor : (isLight ? "#0f172a" : "#ffffff"),
+                    backgroundColor: isBot ? `${widgetColor}15` : (isLight ? "#f1f5f9" : "#1e293b"),
+                    borderColor: isBot ? `${widgetColor}25` : (isLight ? "#e2e8f0" : "#334155"),
+                    color: isBot ? widgetColor : (isLight ? "#475569" : "#cbd5e1"),
                   }}
                 >
-                  {isBot ? <Bot className="h-3.5 w-3.5" /> : <span className="font-bold">G</span>}
+                  {isBot ? <Bot className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
                 </div>
-                <div>
+                <div className="flex flex-col">
                   <div
-                    className={`rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed border`}
+                    className={`rounded-2xl px-4 py-3 text-xs leading-relaxed border shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all`}
                     style={
                       isBot
                         ? {
-                            backgroundColor: isLight ? "#ffffff" : "#0f172a",
-                            borderColor: isLight ? "#e2e8f0" : "#1e293b",
-                            color: isLight ? "#0f172a" : "#e2e8f0",
+                            backgroundColor: isLight ? "#ffffff" : "#1e293b",
+                            borderColor: isLight ? "#e2e8f0" : "#334155",
+                            color: isLight ? "#0f172a" : "#cbd5e1",
                             borderTopLeftRadius: 0,
                           }
                         : {
-                            backgroundColor: widgetColor,
+                            background: `linear-gradient(135deg, ${widgetColor} 0%, ${widgetColor}dd 100%)`,
                             borderColor: widgetColor,
                             color: "#ffffff",
                             borderTopRightRadius: 0,
+                            boxShadow: `0 4px 14px ${widgetColor}25`
                           }
                     }
                   >
@@ -377,7 +391,7 @@ export default function GuestChatPage() {
                   </div>
                   {isBot && msg.escalation_eligible && (
                     <div className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <div className="border rounded-xl px-3 py-2.5" style={{ backgroundColor: isLight ? "#fffbeb" : "rgba(120,53,4,0.1)", borderColor: isLight ? "#fef3c7" : "rgba(180,83,9,0.2)" }}>
+                      <div className="border rounded-xl px-3 py-2.5" style={{ backgroundColor: isLight ? "#fffbeb" : "rgba(251, 191, 36, 0.05)", borderColor: isLight ? "#fef3c7" : "rgba(251, 191, 36, 0.15)" }}>
                         <p className="text-[10px] mb-2 font-medium" style={{ color: isLight ? "#b45309" : "#fbbf24" }}>
                           It looks like you might need extra help.
                         </p>
@@ -395,7 +409,7 @@ export default function GuestChatPage() {
                     </div>
                   )}
                   {msg.time && (
-                    <span className="block text-[8px] text-slate-500 mt-1 pl-1">
+                    <span className="block text-[8px] text-slate-400 dark:text-slate-500 mt-1 pl-1">
                       {msg.time}
                     </span>
                   )}
@@ -406,22 +420,22 @@ export default function GuestChatPage() {
 
           {/* Typing Indicator */}
           {isReplying && (
-            <div className="flex gap-2.5 max-w-[85%] mr-auto items-center">
+            <div className="flex gap-2.5 max-w-[85%] mr-auto items-center animate-pulse">
               <div 
-                className="h-7 w-7 rounded-xl shrink-0 flex items-center justify-center border"
+                className="h-7 w-7 rounded-lg shrink-0 flex items-center justify-center border"
                 style={{
-                  backgroundColor: `${widgetColor}10`,
-                  borderColor: `${widgetColor}20`,
+                  backgroundColor: `${widgetColor}15`,
+                  borderColor: `${widgetColor}25`,
                   color: widgetColor,
                 }}
               >
                 <Bot className="h-3.5 w-3.5" />
               </div>
               <div 
-                className="border rounded-2xl rounded-tl-none px-4 py-3 text-xs flex items-center gap-1.5"
+                className="border rounded-2xl rounded-tl-none px-4 py-3 text-xs flex items-center gap-1.5 shadow-sm"
                 style={{
-                  backgroundColor: isLight ? "#ffffff" : "#0f172a",
-                  borderColor: isLight ? "#e2e8f0" : "#1e293b",
+                  backgroundColor: isLight ? "#ffffff" : "#1e293b",
+                  borderColor: isLight ? "#e2e8f0" : "#334155",
                   color: isLight ? "#475569" : "#94a3b8",
                 }}
               >
@@ -438,19 +452,19 @@ export default function GuestChatPage() {
         {/* Input */}
         <form 
           onSubmit={handleSendMessage} 
-          className="p-3 border-t flex gap-2 shrink-0 relative"
+          className="p-3.5 border-t flex gap-2.5 shrink-0 relative backdrop-blur-md"
           style={{
-            backgroundColor: isLight ? "#ffffff" : "#0f172a",
-            borderColor: isLight ? "#e2e8f0" : "#1e293b",
+            backgroundColor: isLight ? "rgba(255, 255, 255, 0.95)" : "rgba(15, 23, 42, 0.95)",
+            borderColor: isLight ? "rgba(226, 232, 240, 0.8)" : "rgba(51, 65, 85, 0.5)",
           }}
         >
           {/* Rich Glassmorphic Grid Menu Hub (Responsive) */}
           {menuOpen && (
             <div 
-              className="absolute bottom-16 left-3 right-3 max-h-[380px] sm:max-h-[440px] overflow-y-auto rounded-2xl border p-4 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-3 duration-200 z-50 flex flex-col gap-4 text-slate-800 dark:text-slate-200"
+              className="absolute bottom-16 left-3 right-3 max-h-[380px] sm:max-h-[440px] overflow-y-auto rounded-3xl border p-4 shadow-2xl backdrop-blur-lg animate-in fade-in slide-in-from-bottom-3 duration-200 z-50 flex flex-col gap-4 text-slate-800 dark:text-slate-200"
               style={{
-                backgroundColor: isLight ? "rgba(255, 255, 255, 0.95)" : "rgba(15, 23, 42, 0.95)",
-                borderColor: isLight ? "#e2e8f0" : "#1e293b",
+                backgroundColor: isLight ? "rgba(255, 255, 255, 0.98)" : "rgba(30, 41, 59, 0.98)",
+                borderColor: isLight ? "rgba(226, 232, 240, 0.9)" : "rgba(51, 65, 85, 0.8)",
               }}
             >
               {(() => {
@@ -468,7 +482,7 @@ export default function GuestChatPage() {
 
                 return sections.map((section: any, sIdx: number) => (
                   <div key={sIdx}>
-                    <h3 className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-2">
+                    <h3 className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-2 pl-1">
                       {section.section_title}
                     </h3>
                     <div className="grid grid-cols-2 gap-2">
@@ -481,17 +495,17 @@ export default function GuestChatPage() {
                             key={idx}
                             type="button"
                             onClick={() => handleQuickQuery(item.query)}
-                            className="flex flex-col items-center text-center p-3 rounded-xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer"
+                            className="flex flex-col items-center text-center p-3 rounded-2xl border transition hover:scale-[1.02] active:scale-95 cursor-pointer shadow-sm hover:shadow"
                             style={{
-                              borderColor: isLight ? "#f1f5f9" : "#1e293b",
-                              backgroundColor: isLight ? "#ffffff" : "rgba(30, 41, 59, 0.4)"
+                              borderColor: isLight ? "#e2e8f0" : "#334155",
+                              backgroundColor: isLight ? "#ffffff" : "#1e293b"
                             }}
                           >
-                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center mb-2 ${isLight ? 'bg-blue-50 text-blue-500' : 'bg-blue-950/40 text-blue-400'}`}>
-                              <Icon className="h-5 w-5" />
+                            <div className="h-8 w-8 rounded-xl flex items-center justify-center mb-2" style={{ backgroundColor: `${widgetColor}15`, color: widgetColor }}>
+                              <Icon className="h-4.5 w-4.5" />
                             </div>
-                            <span className={`text-xs font-bold ${isLight ? 'text-slate-800' : 'text-slate-100'}`}>{item.label}</span>
-                            <span className={`text-[9px] mt-0.5 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>{item.desc}</span>
+                            <span className={`text-xs font-bold leading-tight ${isLight ? 'text-slate-800' : 'text-slate-100'}`}>{item.label}</span>
+                            <span className={`text-[9px] mt-1 line-clamp-1 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>{item.desc}</span>
                           </button>
                         );
                       })}
@@ -500,69 +514,15 @@ export default function GuestChatPage() {
                 ));
               })()}
 
-              {/* Section 3: Quick Actions */}
-              <div>
-                <h3 className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-2">Quick Actions</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("I need to speak to an agent")}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
-                    style={{
-                      borderColor: isLight ? "#f1f5f9" : "#1e293b",
-                      backgroundColor: isLight ? "#ffffff" : "rgba(30, 41, 59, 0.4)"
-                    }}
-                  >
-                    <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${isLight ? 'bg-blue-50 text-blue-500' : 'bg-blue-950/40 text-blue-400'}`}>
-                      <MessageSquare className="h-4 w-4" />
-                    </div>
-                    <span className={`text-xs font-bold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>Talk to Agent</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickQuery("How do I contact Confluxaa?")}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
-                    style={{
-                      borderColor: isLight ? "#f1f5f9" : "#1e293b",
-                      backgroundColor: isLight ? "#ffffff" : "rgba(30, 41, 59, 0.4)"
-                    }}
-                  >
-                    <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${isLight ? 'bg-blue-50 text-blue-500' : 'bg-blue-950/40 text-blue-400'}`}>
-                      <Mail className="h-4 w-4" />
-                    </div>
-                    <span className={`text-xs font-bold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>Contact Us</span>
-                  </button>
-
-                  {/* Clear Chat option inline for utility */}
-                  <button
-                    type="button"
-                    onClick={handleClearChat}
-                    className="col-span-2 flex items-center justify-center gap-2.5 p-2.5 rounded-xl border text-left transition hover:scale-[1.01] active:scale-[0.98] cursor-pointer bg-rose-500/10 border-rose-500/20 text-rose-500"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="text-xs font-bold">Clear Chat History</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Footer Links */}
-              <div className="flex justify-center gap-4 text-[10px] text-slate-400 dark:text-slate-500 font-bold select-none border-t pt-3" style={{ borderColor: isLight ? "#f1f5f9" : "#1e293b" }}>
-                <button type="button" onClick={() => handleQuickQuery("Tell me About Confluxaa")} className="hover:text-blue-500 transition cursor-pointer">About Us</button>
-                <span>{"•"}</span>
-                <button type="button" onClick={() => handleQuickQuery("Show me Careers at Confluxaa")} className="hover:text-blue-500 transition cursor-pointer">Careers</button>
-                <span>{"•"}</span>
-                <button type="button" onClick={() => handleQuickQuery("Do you have Case Studies?")} className="hover:text-blue-500 transition cursor-pointer">Case Studies</button>
-              </div>
             </div>
           )}
 
           {/* Unified Input Pill Wrapper */}
           <div 
-            className="flex-1 flex items-center border rounded-full pl-2 pr-1 py-1 transition focus-within:ring-2 focus-within:ring-offset-0"
+            className="flex-1 flex items-center border rounded-2xl pl-2 pr-1 py-1 transition focus-within:ring-2 focus-within:ring-indigo-500/20"
             style={{
               backgroundColor: isLight ? "#f8fafc" : "#020617",
-              borderColor: isLight ? "#cbd5e1" : "#1e293b",
+              borderColor: isLight ? "#cbd5e1" : "#334155",
               boxShadow: "none",
             }}
           >
@@ -571,10 +531,10 @@ export default function GuestChatPage() {
               <button
                 type="button"
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="active:scale-95 h-7 w-7 rounded-full transition flex items-center justify-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800"
+                className="active:scale-95 h-7 w-7 rounded-xl transition flex items-center justify-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800"
                 style={{
                   color: isLight ? "#475569" : "#94a3b8",
-                  backgroundColor: isLight ? "#e2e8f0" : "#1e293b",
+                  backgroundColor: isLight ? "#e2e8f0" : "#334155",
                 }}
               >
                 <Menu className="h-3.5 w-3.5" />
@@ -598,7 +558,7 @@ export default function GuestChatPage() {
           <button
             type="submit"
             disabled={isReplying || !inputMessage.trim()}
-            className="active:scale-95 disabled:scale-100 p-2.5 rounded-full text-white transition flex items-center justify-center disabled:opacity-50 shrink-0 cursor-pointer"
+            className="active:scale-95 disabled:scale-100 p-2.5 rounded-2xl text-white transition flex items-center justify-center disabled:opacity-50 shrink-0 cursor-pointer shadow-md hover:shadow-lg"
             style={{
               backgroundColor: widgetColor,
             }}

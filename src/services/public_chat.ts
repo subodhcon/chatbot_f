@@ -131,4 +131,23 @@ export const publicChatService = {
       };
     }
   },
+
+  async getTypingStatus(
+    conversationId: string
+  ): Promise<ApiResponse<{ is_typing: boolean; started_at: string | null }>> {
+    try {
+      const response = await fetch(`${API_URL}/public/conversations/${conversationId}/typing`);
+      return await response.json();
+    } catch (error: unknown) {
+      return {
+        success: false,
+        data: null,
+        error: {
+          code: "REQUEST_FAILED",
+          message: error instanceof Error ? error.message : "Request failed",
+          details: error,
+        },
+      };
+    }
+  },
 };

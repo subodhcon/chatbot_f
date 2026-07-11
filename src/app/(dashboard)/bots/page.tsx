@@ -14,6 +14,8 @@ import {
   ChevronRight,
   ExternalLink,
   Sliders,
+  Sparkles,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import { botService } from "@/services/bot";
@@ -218,54 +220,62 @@ export default function BotsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="space-y-8 max-w-6xl mx-auto px-4 py-2">
       {/* Toast Messages */}
       <div className="fixed bottom-5 right-5 z-50 space-y-2 max-w-sm w-full">
         {successMessage && (
-          <div className="flex items-center gap-3 p-4 bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-5">
+          <div className="flex items-center gap-3 p-4 bg-emerald-50 text-emerald-800 border border-emerald-250 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-5">
             <Check className="h-5 w-5 shrink-0 text-emerald-500" />
-            <span className="text-sm font-medium">{successMessage}</span>
+            <span className="text-sm font-semibold">{successMessage}</span>
           </div>
         )}
         {error && (
-          <div className="flex items-center gap-3 p-4 bg-red-50 text-red-800 border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-5">
-            <AlertCircle className="h-5 w-5 shrink-0 text-red-500" />
-            <span className="text-sm font-medium">{error}</span>
+          <div className="flex items-center gap-3 p-4 bg-rose-50 text-rose-800 border border-rose-250 dark:bg-rose-95/30 dark:text-rose-450 dark:border-rose-900 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-5">
+            <AlertCircle className="h-5 w-5 shrink-0 text-rose-500" />
+            <span className="text-sm font-semibold">{error}</span>
           </div>
         )}
       </div>
 
-      {/* Header and Create Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-            <div className="p-2 bg-indigo-50 dark:bg-indigo-950/50 rounded-xl text-indigo-600 dark:text-indigo-400">
-              <BotIcon className="h-8 w-8" />
-            </div>
-            My Chatbots
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-            Create, deploy, and manage your custom AI chatbot assistants.
-          </p>
+      {/* ── Premium Page Header ── */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-7 shadow-xl border border-indigo-900/30">
+        <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-indigo-600/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-violet-600/20 blur-3xl pointer-events-none" />
+        <div className="absolute top-4 right-6 opacity-10">
+          <Sparkles className="h-28 w-28 text-indigo-300" />
         </div>
-        {isSuperadmin && (
-          <Button
-            onClick={() => setIsCreateOpen(true)}
-            className="flex items-center gap-2 shadow-lg shadow-indigo-500/10"
-          >
-            <Plus className="h-4 w-4" />
-            Create Bot
-          </Button>
-        )}
+
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/40">
+                <BotIcon className="h-5 w-5 text-white" />
+              </div>
+              <div className="h-px w-16 bg-gradient-to-r from-indigo-500/60 to-transparent" />
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-white">Chatbots</h1>
+            <p className="text-sm text-indigo-200/60 mt-1.5 max-w-lg">
+              Configure, customize parameters, train custom data sources, and test your chatbot helpers in real-time.
+            </p>
+          </div>
+
+          {isSuperadmin && (
+            <Button
+              onClick={() => { setError(null); setIsCreateOpen(true); }}
+              className="shrink-0 flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-lg border-0 transition-all duration-200"
+            >
+              <Plus className="h-4.5 w-4.5" /> Create Bot
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Main Content Area */}
       {loading ? (
-        // Skeleton cards loading state
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
-            <Card key={i} className="flex flex-col justify-between min-h-[220px]">
-              <CardHeader className="space-y-4">
+            <Card key={i} className="flex flex-col justify-between min-h-[220px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 rounded-2xl p-6">
+              <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <Skeleton className="h-12 w-12 rounded-xl" />
                   <Skeleton className="h-5 w-16 rounded-full" />
@@ -274,49 +284,46 @@ export default function BotsPage() {
                   <Skeleton className="h-5 w-2/3" />
                   <Skeleton className="h-4 w-5/6" />
                 </div>
-              </CardHeader>
-              <CardFooter className="flex justify-between gap-2 border-t border-slate-50 dark:border-slate-900 pt-4">
+              </div>
+              <div className="flex justify-between gap-2 border-t border-slate-50 dark:border-slate-850 pt-4 mt-4">
                 <Skeleton className="h-8 w-24 rounded-lg" />
                 <Skeleton className="h-8 w-20 rounded-lg" />
-              </CardFooter>
+              </div>
             </Card>
           ))}
         </div>
       ) : bots.length === 0 ? (
-        // Empty State
-        <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center bg-slate-50/50 dark:bg-slate-900/10 backdrop-blur-sm">
+        <div className="flex flex-col items-center justify-center border border-indigo-100 dark:border-indigo-900/30 rounded-3xl p-14 text-center bg-gradient-to-br from-indigo-50/30 to-violet-50/30 dark:from-indigo-950/10 dark:to-violet-950/10 backdrop-blur-sm shadow-sm">
           <div className="rounded-2xl bg-indigo-500/10 p-4 text-indigo-500 mb-4 animate-bounce">
             <BotIcon className="h-12 w-12" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">No chatbots found</h3>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white">No Chatbots Found</h3>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
             {isSuperadmin 
               ? "You haven't created any chatbot assistants yet. Get started by clicking the \"Create Bot\" button above!"
               : "You don't have any chatbot assistants assigned to you yet. Please contact a superadmin to link a chatbot."}
           </p>
           {isSuperadmin && (
             <Button
-              onClick={() => setIsCreateOpen(true)}
-              className="mt-6"
+              onClick={() => { setError(null); setIsCreateOpen(true); }}
+              className="mt-6 bg-indigo-650 hover:bg-indigo-600 text-white font-semibold rounded-xl"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Create Your First Bot
+              <Plus className="h-4 w-4 mr-2" /> Create Your First Bot
             </Button>
           )}
         </div>
       ) : (
-        // Bots Grid
         <div className="space-y-6">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {bots.map((bot) => (
               <Card
                 key={bot.id}
-                className="group relative flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:shadow-md hover:border-indigo-500/30 dark:hover:border-indigo-500/20"
+                className="group relative flex flex-col justify-between min-h-[220px] bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-2xl p-6 transition-all duration-300 hover:shadow-lg hover:border-indigo-500/30 dark:hover:border-indigo-500/20"
               >
-                <CardHeader className="pb-4">
+                <div className="pb-4">
                   <div className="flex items-start justify-between gap-4">
                     {/* Bot Avatar */}
-                    <div className="h-12 w-12 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center overflow-hidden border border-indigo-100 dark:border-indigo-900/50">
+                    <div className="h-12 w-12 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center overflow-hidden border border-indigo-100 dark:border-indigo-900/50 transition-transform duration-300 group-hover:scale-105">
                       {bot.avatar_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -333,7 +340,7 @@ export default function BotsPage() {
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1.5">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -348,7 +355,7 @@ export default function BotsPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => openDeleteModal(bot)}
-                          className="h-8 w-8 rounded-lg text-slate-500 hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-950/50"
+                          className="h-8 w-8 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50"
                           title="Delete Bot"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -359,36 +366,41 @@ export default function BotsPage() {
 
                   <div className="mt-4">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate">
+                      <h3 className="text-base font-extrabold text-slate-900 dark:text-white truncate">
                         {bot.name}
                       </h3>
-                      <Badge variant={bot.is_active ? "success" : "secondary"}>
-                        {bot.is_active ? "Active" : "Inactive"}
-                      </Badge>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        bot.is_active
+                          ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/30"
+                          : "bg-slate-50 dark:bg-slate-800 text-slate-650 dark:text-slate-400 border-slate-200 dark:border-slate-700"
+                      }`}>
+                        {bot.is_active ? "● Active" : "○ Inactive"}
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 font-mono mt-1 truncate">
+                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold font-mono mt-1.5 truncate">
                       /{bot.slug}
                     </p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
-                      Created: {new Date(bot.created_at).toLocaleDateString()}
-                    </p>
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-450 dark:text-slate-500 mt-3.5">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>{new Date(bot.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                    </div>
                   </div>
-                </CardHeader>
+                </div>
 
                 {/* Card footer links to agent playground/details */}
-                <CardFooter className="pt-4 border-t border-slate-50 dark:border-slate-900 flex items-center justify-between gap-2">
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-850 flex items-center justify-between gap-2">
                   <Link
                     href={`/bots/${bot.id}/config`}
-                    className="text-xs font-semibold text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 flex items-center gap-1.5 bg-slate-50 hover:bg-indigo-50/50 dark:bg-slate-900 dark:hover:bg-indigo-950/30 px-3 py-1.5 rounded-lg transition"
+                    className="text-xs font-bold text-slate-650 hover:text-indigo-650 dark:text-slate-350 dark:hover:text-indigo-400 flex items-center gap-1.5 bg-slate-50 hover:bg-indigo-50/50 dark:bg-slate-950 dark:hover:bg-indigo-950/30 px-3.5 py-2 rounded-xl border border-slate-100 dark:border-slate-850 transition"
                   >
-                    <Sliders className="h-3.5 w-3.5" />
+                    <Sliders className="h-3.5 w-3.5 text-indigo-500" />
                     Configure
                   </Link>
 
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => handleCopyShareLink(bot.id)}
-                      className="text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
+                      className="text-xs font-semibold text-slate-500 hover:text-indigo-650 dark:hover:text-indigo-400 transition cursor-pointer"
                       title="Copy public chat URL"
                     >
                       {copiedBotId === bot.id ? "Copied!" : "Copy Link"}
@@ -397,20 +409,20 @@ export default function BotsPage() {
                     <Link
                       href={`/chat/${bot.id}`}
                       target="_blank"
-                      className="text-xs font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center gap-1"
+                      className="text-xs font-bold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center gap-1"
                     >
                       Test Chat <ExternalLink className="h-3.5 w-3.5" />
                     </Link>
                   </div>
-                </CardFooter>
+                </div>
               </Card>
             ))}
           </div>
 
           {/* Pagination Controls */}
-          <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-6">
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Showing page <span className="font-semibold text-slate-700 dark:text-slate-200">{currentPage}</span>
+          <div className="flex items-center justify-between border-t border-slate-150 dark:border-slate-850 pt-6">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+              Showing Page {currentPage}
             </p>
             <div className="flex gap-2">
               <Button
@@ -418,7 +430,7 @@ export default function BotsPage() {
                 size="sm"
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1 || loading}
-                className="flex items-center gap-1.5"
+                className="flex items-center gap-1.5 rounded-xl border-slate-200 dark:border-slate-800 text-xs font-semibold bg-white dark:bg-slate-900"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
@@ -428,7 +440,7 @@ export default function BotsPage() {
                 size="sm"
                 onClick={() => setCurrentPage((prev) => prev + 1)}
                 disabled={!hasMore || loading}
-                className="flex items-center gap-1.5"
+                className="flex items-center gap-1.5 rounded-xl border-slate-200 dark:border-slate-800 text-xs font-semibold bg-white dark:bg-slate-900"
               >
                 Next
                 <ChevronRight className="h-4 w-4" />
@@ -456,6 +468,7 @@ export default function BotsPage() {
             onCancel={() => setIsCreateOpen(false)}
             isLoading={actionLoading}
             submitLabel="Create Bot"
+            error={error}
           />
         </DialogContent>
       </Dialog>
@@ -465,7 +478,10 @@ export default function BotsPage() {
         open={isEditOpen}
         onOpenChange={(open) => {
           setIsEditOpen(open);
-          if (!open) setSelectedBot(null);
+          if (!open) {
+            setSelectedBot(null);
+            setError(null);
+          }
         }}
       >
         <DialogContent>
@@ -489,9 +505,11 @@ export default function BotsPage() {
             onCancel={() => {
               setIsEditOpen(false);
               setSelectedBot(null);
+              setError(null);
             }}
             isLoading={actionLoading}
             submitLabel="Save Changes"
+            error={error}
           />
         </DialogContent>
       </Dialog>

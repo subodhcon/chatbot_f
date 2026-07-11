@@ -10,6 +10,9 @@ export interface BotFormData {
   name: string;
   avatar_url: string | null;
   is_active: boolean;
+  use_custom_mongo?: boolean;
+  mongo_uri?: string | null;
+  mongo_db_name?: string | null;
 }
 
 interface BotFormProps {
@@ -18,6 +21,7 @@ interface BotFormProps {
   onCancel: () => void;
   isLoading: boolean;
   submitLabel: string;
+  error?: string | null;
 }
 
 export default function BotForm({
@@ -26,10 +30,14 @@ export default function BotForm({
   onCancel,
   isLoading,
   submitLabel,
+  error,
 }: BotFormProps) {
   const [name, setName] = useState(initialValues?.name || "");
   const [avatarUrl, setAvatarUrl] = useState(initialValues?.avatar_url || "");
   const [isActive, setIsActive] = useState(initialValues?.is_active ?? true);
+  const [useCustomMongo, setUseCustomMongo] = useState(initialValues?.use_custom_mongo ?? false);
+  const [mongoUri, setMongoUri] = useState(initialValues?.mongo_uri || "");
+  const [mongoDbName, setMongoDbName] = useState(initialValues?.mongo_db_name || "");
 
   // Uploading states
   const [isUploading, setIsUploading] = useState(false);
@@ -48,6 +56,9 @@ export default function BotForm({
         setName(initialValues.name);
         setAvatarUrl(initialValues.avatar_url || "");
         setIsActive(initialValues.is_active);
+        setUseCustomMongo(initialValues.use_custom_mongo ?? false);
+        setMongoUri(initialValues.mongo_uri || "");
+        setMongoDbName(initialValues.mongo_db_name || "");
       }, 0);
       return () => clearTimeout(timer);
     }
@@ -142,6 +153,21 @@ export default function BotForm({
       return;
     }
 
+    if (!avatarUrl) {
+      setAvatarError("Avatar image is required. Please upload a PNG or JPG avatar.");
+      return;
+    }
+
+    if (!mongoUri.trim()) {
+      setAvatarError("MongoDB Connection URI is required.");
+      return;
+    }
+
+    if (!mongoDbName.trim()) {
+      setAvatarError("MongoDB Database Name is required.");
+      return;
+    }
+
     if (nameError || avatarError) {
       return;
     }
@@ -150,6 +176,9 @@ export default function BotForm({
       name: name.trim(),
       avatar_url: avatarUrl.trim() || null,
       is_active: isActive,
+      use_custom_mongo: true,
+      mongo_uri: mongoUri.trim(),
+      mongo_db_name: mongoDbName.trim(),
     });
   };
 
@@ -289,6 +318,52 @@ export default function BotForm({
         </label>
       </div>
 
+      {/* MongoDB Atlas Integration Section */}
+      <div className="space-y-4 border-t border-slate-100 dark:border-slate-900 pt-4">
+        <h4 className="text-sm font-bold text-slate-850 dark:text-slate-200">
+          MongoDB Atlas Connection (Required)
+        </h4>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Specify your MongoDB database settings to store chatbot messages, document chunks, and snapshots.
+        </p>
+
+        <div className="space-y-4 animate-in fade-in duration-200">
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              MongoDB Connection URI *
+            </label>
+            <Input
+              type="text"
+              required
+              placeholder="mongodb+srv://user:pass@cluster.mongodb.net"
+              value={mongoUri}
+              onChange={(e) => setMongoUri(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              MongoDB Database Name *
+            </label>
+            <Input
+              type="text"
+              required
+              placeholder="e.g. chatbot_db"
+              value={mongoDbName}
+              onChange={(e) => setMongoDbName(e.target.value)}
+              className="w-full"
+            />
+          </div>
+        </div>
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-2 p-3 bg-red-50 text-red-800 border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900 rounded-xl text-xs font-semibold animate-in fade-in duration-200">
+          <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+          <span>{error}</span>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-900 mt-6">
         <Button
@@ -301,7 +376,7 @@ export default function BotForm({
         </Button>
         <Button
           type="submit"
-          disabled={isLoading || isUploading || !name.trim() || !!nameError || !!avatarError}
+          disabled={isLoading || isUploading || !name.trim() || !avatarUrl || !mongoUri.trim() || !mongoDbName.trim() || !!nameError || !!avatarError}
           className="bg-indigo-600 hover:bg-indigo-500 text-white"
         >
           {(isLoading || isUploading) && <Loader2 className="h-4 w-4 animate-spin mr-2" />}

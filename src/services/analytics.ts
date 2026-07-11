@@ -44,4 +44,28 @@ export const analyticsService = {
       }
     );
   },
+  async getBotSnapshots(
+    botId: string,
+    fromDate?: string,
+    toDate?: string
+  ): Promise<ApiResponse<{ snapshots: any[]; count: number }>> {
+    const params = new URLSearchParams();
+    if (fromDate) params.append("from_date", fromDate);
+    if (toDate) params.append("to_date", toDate);
+    const query = params.toString() ? `?${params.toString()}` : "";
+    return fetchWithAuth<{ snapshots: any[]; count: number }>(`/analytics/bots/${botId}/snapshots${query}`);
+  },
+  async triggerBotSnapshot(
+    botId: string,
+    dateStr?: string
+  ): Promise<ApiResponse<{ message: string; bot_id: string; date?: string }>> {
+    const body = dateStr ? JSON.stringify({ date_str: dateStr }) : undefined;
+    return fetchWithAuth<{ message: string; bot_id: string; date?: string }>(
+      `/analytics/bots/${botId}/snapshots/generate`,
+      {
+        method: "POST",
+        body,
+      }
+    );
+  },
 };

@@ -12,7 +12,8 @@ import {
   Smile,
   Plus,
   Trash2,
-  FolderPlus
+  FolderPlus,
+  Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { botService, Bot as BotType } from "@/services/bot";
@@ -44,6 +45,9 @@ export default function BotConfigPage({ params }: PageProps) {
   const [widgetColor, setWidgetColor] = useState("#6366f1");
   const [widgetTheme, setWidgetTheme] = useState("dark");
   const [quickLinks, setQuickLinks] = useState<any[]>([]);
+  const [useCustomMongo, setUseCustomMongo] = useState(false);
+  const [mongoUri, setMongoUri] = useState("");
+  const [mongoDbName, setMongoDbName] = useState("");
 
   // Live Validation States
   const [greetingError, setGreetingError] = useState<string | null>(null);
@@ -94,6 +98,9 @@ export default function BotConfigPage({ params }: PageProps) {
         setGreetingMessage(config.welcome_message || "");
         setFallbackMessage(config.fallback_message || "");
         setTone(config.tone || "friendly");
+        setUseCustomMongo(config.use_custom_mongo || false);
+        setMongoUri(config.mongo_uri || "");
+        setMongoDbName(config.mongo_db_name || "");
         const extra = config.extra_config || {};
         setWidgetColor(extra.widget_color || "#6366f1");
         setWidgetTheme(extra.widget_theme || "dark");
@@ -162,6 +169,9 @@ export default function BotConfigPage({ params }: PageProps) {
         greeting_message: greetingMessage.trim(),
         fallback_message: fallbackMessage.trim(),
         tone,
+        use_custom_mongo: useCustomMongo,
+        mongo_uri: mongoUri.trim(),
+        mongo_db_name: mongoDbName.trim(),
         extra_config: {
           widget_color: widgetColor,
           widget_theme: widgetTheme,
@@ -184,51 +194,52 @@ export default function BotConfigPage({ params }: PageProps) {
   const hasValidationErrors = !!greetingError || !!fallbackError || !greetingMessage.trim() || !fallbackMessage.trim();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-6xl mx-auto px-4 py-2">
       {/* Toast Messages */}
       <div className="fixed bottom-5 right-5 z-50 space-y-2 max-w-sm w-full">
         {success && (
-          <div className="flex items-center gap-3 p-4 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl shadow-lg animate-in fade-in slide-in-from-bottom-5">
-            <Check className="h-5 w-5 shrink-0" />
-            <span className="text-sm font-medium">{success}</span>
+          <div className="flex items-center gap-3 p-4 bg-emerald-50 text-emerald-800 border border-emerald-250 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-5">
+            <Check className="h-5 w-5 shrink-0 text-emerald-500" />
+            <span className="text-sm font-semibold">{success}</span>
           </div>
         )}
         {error && (
-          <div className="flex items-center gap-3 p-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl shadow-lg animate-in fade-in slide-in-from-bottom-5">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <span className="text-sm font-medium">{error}</span>
+          <div className="flex items-center gap-3 p-4 bg-rose-50 text-rose-800 border border-rose-250 dark:bg-rose-95/30 dark:text-rose-450 dark:border-rose-900 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-5">
+            <AlertCircle className="h-5 w-5 shrink-0 text-rose-500" />
+            <span className="text-sm font-semibold">{error}</span>
           </div>
         )}
       </div>
 
-      {/* Header / Breadcrumbs */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
-          <Link href="/bots" className="hover:text-indigo-500 dark:hover:text-indigo-400 transition">
-            Chatbots
-          </Link>
-          <span>/</span>
-          <span className="text-slate-900 dark:text-white truncate">{bot?.name || "Loading..."}</span>
-          <span>/</span>
-          <span className="text-slate-400 dark:text-slate-500">Settings</span>
-        </div>
+      {/* ── Premium Page Header ── */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-7 shadow-xl border border-indigo-900/30">
+        <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-indigo-600/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-violet-600/20 blur-3xl pointer-events-none" />
+        
+        <div className="relative flex flex-col gap-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-300/70 uppercase tracking-wider">
+            <Link href="/bots" className="hover:text-white transition">Chatbots</Link>
+            <span>/</span>
+            <span className="text-white truncate">{bot?.name || "Loading..."}</span>
+            <span>/</span>
+            <span className="text-indigo-400">Settings</span>
+          </div>
 
-        <div className="flex items-center gap-4 mt-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => router.push("/bots")}
-            className="rounded-xl border border-slate-200 dark:border-slate-800"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              Bot Settings
-            </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Configure greetings, fallback scenarios, and conversational tone for your AI agent.
-            </p>
+          <div className="flex items-center gap-4 mt-1">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => router.push("/bots")}
+              className="rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/15 cursor-pointer"
+            >
+              <ArrowLeft className="h-4.5 w-4.5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-white">Bot Settings</h1>
+              <p className="text-sm text-indigo-200/60 mt-1">
+                Configure greetings, fallback scenarios, widgets, and custom MongoDB parameters.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -276,12 +287,22 @@ export default function BotConfigPage({ params }: PageProps) {
                 </CardHeader>
 
                 <CardContent className="space-y-6">
+
                   {/* Greeting Message */}
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Greeting Message *
-                      </label>
+                      <div className="flex items-center gap-2">
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Greeting Message *
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => handleGreetingChange("Welcome to Pinddaan Gaya Information Assistant. How can I help you today with rituals, list of Panda Ji, hotels, or route guidelines? 🙏")}
+                          className="text-[10px] font-bold text-indigo-600 hover:text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-150 dark:border-indigo-900/40"
+                        >
+                          Suggest Gaya Ji
+                        </button>
+                      </div>
                       <span className={`text-[10px] font-mono ${
                         greetingMessage.length > 270 ? "text-red-500 font-bold" : "text-slate-400 dark:text-slate-500"
                       }`}>
@@ -308,9 +329,18 @@ export default function BotConfigPage({ params }: PageProps) {
                   {/* Fallback Message */}
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Fallback Message *
-                      </label>
+                      <div className="flex items-center gap-2">
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Fallback Message *
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => handleFallbackChange("I apologize, but I could not find that specific detail in our official pilgrimage guide. Please contact the Help Line at 9266628168 or check directly with the lodging house committee. 🚩")}
+                          className="text-[10px] font-bold text-indigo-600 hover:text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-150 dark:border-indigo-900/40"
+                        >
+                          Suggest Gaya Ji
+                        </button>
+                      </div>
                       <span className={`text-[10px] font-mono ${
                         fallbackMessage.length > 270 ? "text-red-500 font-bold" : "text-slate-400 dark:text-slate-500"
                       }`}>
@@ -418,6 +448,70 @@ export default function BotConfigPage({ params }: PageProps) {
                           <option value="light">Light Theme</option>
                         </select>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* MongoDB Atlas Integration Section */}
+                  <div className="h-px bg-slate-200 dark:bg-slate-800 my-6" />
+
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">
+                        MongoDB Atlas Integration (Advanced)
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Store conversation logs, document chunks, and search history in your custom MongoDB database.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Checkbox toggle */}
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={useCustomMongo}
+                          onChange={(e) => setUseCustomMongo(e.target.checked)}
+                          className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                        />
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Use Custom MongoDB Database for this chatbot
+                        </span>
+                      </label>
+
+                      {useCustomMongo && (
+                        <div className="grid gap-4 sm:grid-cols-2 p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/30 animate-in fade-in slide-in-from-top-2 duration-200">
+                          {/* Connection URI input */}
+                          <div className="space-y-2 sm:col-span-2">
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                              MongoDB Connection URI *
+                            </label>
+                            <input
+                              type="text"
+                              value={mongoUri}
+                              onChange={(e) => setMongoUri(e.target.value)}
+                              placeholder="mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority"
+                              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:bg-slate-950 dark:text-white dark:border-slate-800"
+                            />
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                              For security, this connection string is encrypted at rest using AES-256 Fernet encryption.
+                            </p>
+                          </div>
+
+                          {/* Database Name input */}
+                          <div className="space-y-2 sm:col-span-2">
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                              Database Name *
+                            </label>
+                            <input
+                              type="text"
+                              value={mongoDbName}
+                              onChange={(e) => setMongoDbName(e.target.value)}
+                              placeholder="chatbot_data"
+                              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:bg-slate-950 dark:text-white dark:border-slate-800"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -593,34 +687,43 @@ export default function BotConfigPage({ params }: PageProps) {
                           Add Category
                         </Button>
 
-                        {quickLinks.length === 0 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setQuickLinks([
-                                {
-                                  section_title: "Connect",
-                                  items: [
-                                    { label: "Book a Meeting", query: "I want to Book a Meeting", desc: "Schedule a call", icon: "Calendar" },
-                                    { label: "Careers", query: "Are there any job openings / Careers?", desc: "Join our team", icon: "Briefcase" }
-                                  ]
-                                },
-                                {
-                                  section_title: "Technology Services",
-                                  items: [
-                                    { label: "AI & ML Solutions", query: "Tell me about AI & ML Solutions", desc: "Intelligent automation", icon: "Layers" },
-                                    { label: "Blockchain", query: "Tell me about Blockchain Services", desc: "Web3 solutions", icon: "LayoutGrid" }
-                                  ]
-                                }
-                              ]);
-                            }}
-                            className="text-xs font-bold gap-1.5 text-indigo-600 hover:text-indigo-700"
-                          >
-                            Load Default IT Menu Template
-                          </Button>
-                        )}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setQuickLinks([
+                              {
+                                section_title: "Pinddaan Gaya & Rituals",
+                                items: [
+                                  { label: "About Pinddaan", query: "What is Pinddaan Gaya?", desc: "Learn about Pitripaksh rituals", icon: "BookOpen" },
+                                  { label: "Daily Rituals", query: "What are the daily rituals in Pitripaksh Mela?", desc: "Pooja timings & rules", icon: "Clock" },
+                                  { label: "List of Vedies", query: "Where are the Vedies for Pinddaan in Gaya?", desc: "Important holy sites", icon: "Layers" }
+                                ]
+                              },
+                              {
+                                section_title: "Facilities & Services",
+                                items: [
+                                  { label: "List of Panda Ji", query: "How to contact Panda Ji for rituals?", desc: "Panda Ji details", icon: "Users" },
+                                  { label: "Where to Stay", query: "Where to stay in Gaya? List hotels & accommodation", desc: "Hotels & Tent cities", icon: "Home" },
+                                  { label: "How to Reach", query: "How to reach Gaya? Railway & Airport guides", desc: "Transport timetable", icon: "Globe" }
+                                ]
+                              },
+                              {
+                                section_title: "Sight Seeing & Support",
+                                items: [
+                                  { label: "Vishnupad Temple", query: "Tell me about Vishnupad Temple in Gaya", desc: "Historical highlights", icon: "Sparkles" },
+                                  { label: "Mela Administration", query: "Who are the mela committee & administration helpers?", desc: "Lodging house committee", icon: "Shield" },
+                                  { label: "Emergency Directory", query: "List of emergency numbers for Gaya Mela", desc: "Police & Hospital support", icon: "Phone" }
+                                ]
+                              }
+                            ]);
+                          }}
+                          className="text-xs font-bold gap-1.5 border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400"
+                        >
+                          <Sparkles className="h-4 w-4" />
+                          Apply Gaya Ji Tourism Template
+                        </Button>
                       </div>
                     </div>
                   </div>

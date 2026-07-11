@@ -13,6 +13,9 @@ export interface BotConfig {
   is_streaming: boolean;
   fallback_message: string | null;
   tone: string | null;
+  use_custom_mongo: boolean;
+  mongo_uri: string | null;
+  mongo_db_name: string | null;
   extra_config: Record<string, any> | null;
   created_at: string;
   updated_at: string;
@@ -33,6 +36,9 @@ export interface BotCreateInput {
   name: string;
   avatar_url?: string | null;
   is_active?: boolean;
+  use_custom_mongo?: boolean;
+  mongo_uri?: string | null;
+  mongo_db_name?: string | null;
 }
 
 export interface BotUpdateInput {
@@ -49,6 +55,9 @@ export interface BotConfigUpdateInput {
   greeting_message?: string | null;
   fallback_message?: string | null;
   tone?: string | null;
+  use_custom_mongo?: boolean;
+  mongo_uri?: string | null;
+  mongo_db_name?: string | null;
   extra_config?: Record<string, any> | null;
 }
 
@@ -314,12 +323,12 @@ export const botService = {
     botId: string,
     skip = 0,
     limit = 10
-  ): Promise<ApiResponse<{ total: number; skip: number; limit: number; items: KnowledgeSource[] }>> {
+  ): Promise<ApiResponse<{ total: number; skip: number; limit: number; items: KnowledgeSource[]; stats?: { completed: number; processing: number; failed: number } }>> {
     const params = new URLSearchParams({
       skip: skip.toString(),
       limit: limit.toString(),
     });
-    return fetchWithAuth<{ total: number; skip: number; limit: number; items: KnowledgeSource[] }>(
+    return fetchWithAuth<{ total: number; skip: number; limit: number; items: KnowledgeSource[]; stats?: { completed: number; processing: number; failed: number } }>(
       `/bots/${botId}/knowledge?${params.toString()}`
     );
   },
@@ -367,6 +376,7 @@ export interface KnowledgeSource {
   file_size: number | null;
   status: 'queued' | 'processing' | 'completed' | 'failed';
   created_at: string;
+  updated_at?: string;
   progress?: number;
   error_message?: string | null;
 }
