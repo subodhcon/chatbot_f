@@ -24,7 +24,8 @@ export const documentService = {
   ): Promise<ApiResponse<Document>> {
     return new Promise((resolve) => {
       const xhr = new XMLHttpRequest();
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+      const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+      const API_URL = rawApiUrl.replace(/^['"]|['"]$/g, "").trim();
       const accessToken = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
 
       xhr.open("POST", `${API_URL}/documents/upload`);

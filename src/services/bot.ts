@@ -166,7 +166,8 @@ export const botService = {
   ): Promise<ApiResponse<{ avatar_url: string }>> {
     return new Promise((resolve) => {
       const xhr = new XMLHttpRequest();
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+      const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+      const API_URL = rawApiUrl.replace(/^['"]|['"]$/g, "").trim();
       const accessToken = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
 
       xhr.open("POST", `${API_URL}/bots/avatar/upload`);
@@ -232,7 +233,7 @@ export const botService = {
   },
 
   /**
-   * Uploads a knowledge base document (PDF or DOCX) for a specific bot and tracks progress.
+   * Uploads raw document files for knowledge ingestion and tracks progress.
    */
   uploadKnowledge(
     botId: string,
@@ -241,7 +242,8 @@ export const botService = {
   ): Promise<ApiResponse<KnowledgeUploadResponseData>> {
     return new Promise((resolve) => {
       const xhr = new XMLHttpRequest();
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+      const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+      const API_URL = rawApiUrl.replace(/^['"]|['"]$/g, "").trim();
       const accessToken = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
 
       xhr.open("POST", `${API_URL}/bots/${botId}/knowledge/upload`);
