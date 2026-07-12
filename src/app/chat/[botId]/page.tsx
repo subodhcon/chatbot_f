@@ -80,11 +80,13 @@ export default function GuestChatPage() {
     return formattedLines.join("");
   };
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom on new message
+  // Scroll to bottom on new message by setting parent scrollTop directly
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -334,6 +336,7 @@ export default function GuestChatPage() {
         </div>
 
         <div 
+          ref={messagesContainerRef}
           className="flex-1 p-4 overflow-y-auto space-y-4 flex flex-col scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800"
           style={{
             backgroundColor: isLight ? "rgba(248, 250, 252, 0.4)" : "rgba(2, 6, 23, 0.4)",
@@ -447,8 +450,6 @@ export default function GuestChatPage() {
               </div>
             </div>
           )}
-
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}
