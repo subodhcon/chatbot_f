@@ -121,7 +121,10 @@ export default function KnowledgeBasePage() {
     let reconnectTimeout: any;
 
     const connectWS = () => {
-      const wsUrl = `${process.env.NEXT_PUBLIC_WS_BASE_URL || "ws://localhost:8000"}/api/v1/ws/ingestion/${selectedBotId}`;
+      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+      const wsUrl = `${process.env.NEXT_PUBLIC_WS_BASE_URL || "ws://localhost:8000"}/api/v1/ws/ingestion/${selectedBotId}${
+        token ? `?token=${token}` : ""
+      }`;
       socket = new WebSocket(wsUrl);
 
       socket.onmessage = (event) => {
