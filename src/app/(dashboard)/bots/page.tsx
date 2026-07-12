@@ -63,6 +63,7 @@ export default function BotsPage() {
 
   // Active items for editing/deleting
   const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
+  const [selectedBotConfig, setSelectedBotConfig] = useState<any | null>(null);
 
   // Copy state
   const [copiedBotId, setCopiedBotId] = useState<string | null>(null);
@@ -152,9 +153,23 @@ export default function BotsPage() {
   };
 
   // Edit Bot opener helper
-  const openEditModal = (bot: Bot) => {
-    setSelectedBot(bot);
-    setIsEditOpen(true);
+  const openEditModal = async (bot: Bot) => {
+    setActionLoading(true);
+    setError(null);
+    try {
+      const configRes = await botService.getBotConfig(bot.id);
+      if (configRes.success && configRes.data) {
+        setSelectedBot(bot);
+        setSelectedBotConfig(configRes.data);
+        setIsEditOpen(true);
+      } else {
+        setError(configRes.error?.message || "Failed to load bot configuration.");
+      }
+    } catch {
+      setError("Failed to fetch bot configuration due to network issue.");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // Edit Bot handler
@@ -164,15 +179,34 @@ export default function BotsPage() {
     setActionLoading(true);
     setError(null);
     try {
-      const response = await botService.updateBot(selectedBot.id, formData);
+      // 1. Update basic bot details
+      const updateBotRes = await botService.updateBot(selectedBot.id, {
+        name: formData.name,
+        avatar_url: formData.avatar_url,
+        is_active: formData.is_active,
+      });
 
-      if (response.success && response.data) {
-        setSuccessMessage(`Bot "${response.data.name}" updated successfully!`);
+      if (!updateBotRes.success) {
+        setError(updateBotRes.error?.message || "Failed to update bot settings.");
+        setActionLoading(false);
+        return;
+      }
+
+      // 2. Update config details (MongoDB connection parameters)
+      const updateConfigRes = await botService.updateBotConfig(selectedBot.id, {
+        use_custom_mongo: formData.use_custom_mongo,
+        mongo_uri: formData.mongo_uri,
+        mongo_db_name: formData.mongo_db_name,
+      });
+
+      if (updateConfigRes.success) {
+        setSuccessMessage(`Bot "${formData.name}" updated successfully!`);
         setIsEditOpen(false);
         setSelectedBot(null);
+        setSelectedBotConfig(null);
         fetchBots();
       } else {
-        setError(response.error?.message || "Failed to update bot.");
+        setError(updateConfigRes.error?.message || "Failed to save MongoDB configuration.");
       }
     } catch {
       setError("Failed to update bot due to a network connection issue.");
@@ -500,6 +534,9 @@ export default function BotsPage() {
               name: selectedBot?.name || "",
               avatar_url: selectedBot?.avatar_url || "",
               is_active: selectedBot?.is_active ?? true,
+              use_custom_mongo: selectedBotConfig?.use_custom_mongo ?? false,
+              mongo_uri: selectedBotConfig?.mongo_uri || "",
+              mongo_db_name: selectedBotConfig?.mongo_db_name || "",
             }}
             onSubmit={handleEditBot}
             onCancel={() => {
