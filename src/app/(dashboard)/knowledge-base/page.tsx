@@ -163,6 +163,8 @@ export default function KnowledgeBasePage() {
                   bot_id: selectedBotId,
                   source_type: "url",
                   source_name: data.source_name || "Crawled Page",
+                  file_path: null,
+                  url: data.url || null,
                   file_size: 0,
                   created_at: new Date().toISOString(),
                   updated_at: new Date().toISOString(),
