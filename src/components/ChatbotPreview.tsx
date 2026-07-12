@@ -155,11 +155,12 @@ export default function ChatbotPreview({
       {/* Messages Body */}
       <div 
         ref={scrollRef}
-        className="flex-1 p-4 space-y-4 overflow-y-auto min-h-[300px]"
+        className="flex-1 p-4 space-y-4 overflow-y-auto min-h-[300px] flex flex-col"
         style={{
           backgroundColor: isLight ? "#f8fafc" : "#070a13",
         }}
       >
+        <div className="flex-1 mt-auto" />
         {messages.map((msg) => (
           <div key={msg.id} className={`flex items-start gap-2.5 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
             {msg.sender === "bot" && (
