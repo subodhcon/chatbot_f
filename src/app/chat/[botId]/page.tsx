@@ -333,13 +333,13 @@ export default function GuestChatPage() {
           </div>
         </div>
 
-        {/* Message Logs */}
         <div 
           className="flex-1 p-4 overflow-y-auto space-y-4 flex flex-col scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800"
           style={{
             backgroundColor: isLight ? "rgba(248, 250, 252, 0.4)" : "rgba(2, 6, 23, 0.4)",
           }}
         >
+          <div className="flex-1 mt-auto" />
           {messages.map((msg, i) => {
             const isBot = msg.sender === "bot";
             return (
