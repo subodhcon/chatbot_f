@@ -262,7 +262,7 @@ export default function ChatbotPreview({
             backgroundColor: isLight ? "#f8fafc" : "#070a13",
             borderColor: isLight ? "#cbd5e1" : "#1e293b",
             color: isLight ? "#0f172a" : "#f3f4f6",
-            focusRingColor: widgetColor,
+            ["--tw-ring-color" as any]: widgetColor,
           }}
         />
         <button
