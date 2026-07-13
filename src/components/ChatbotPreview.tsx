@@ -28,7 +28,7 @@ export default function ChatbotPreview({
   greetingMessage,
   fallbackMessage,
   tone,
-  widgetColor = "#6366f1",
+  widgetColor = "#f59e0b",
   widgetTheme = "dark",
 }: ChatbotPreviewProps) {
   const isLight = widgetTheme === "light";

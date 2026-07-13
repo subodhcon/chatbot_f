@@ -272,7 +272,7 @@ export default function GuestChatPage() {
   }
 
   const isLight = bot.extra_config?.widget_theme === "light";
-  const widgetColor = bot.extra_config?.widget_color || "#6366f1";
+  const widgetColor = bot.extra_config?.widget_color || "#f59e0b";
   return (
     <div 
       className="min-h-screen flex items-center justify-center p-0 sm:p-4 md:p-6 transition-all duration-300 relative overflow-hidden"

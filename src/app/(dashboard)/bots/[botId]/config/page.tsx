@@ -44,7 +44,7 @@ export default function BotConfigPage({ params }: PageProps) {
   const [greetingMessage, setGreetingMessage] = useState("");
   const [fallbackMessage, setFallbackMessage] = useState("");
   const [tone, setTone] = useState("friendly");
-  const [widgetColor, setWidgetColor] = useState("#6366f1");
+  const [widgetColor, setWidgetColor] = useState("#f59e0b");
   const [widgetTheme, setWidgetTheme] = useState("dark");
   const [quickLinks, setQuickLinks] = useState<any[]>([]);
   const [useCustomMongo, setUseCustomMongo] = useState(false);
@@ -104,7 +104,7 @@ export default function BotConfigPage({ params }: PageProps) {
         setMongoUri(config.mongo_uri || "");
         setMongoDbName(config.mongo_db_name || "");
         const extra = config.extra_config || {};
-        setWidgetColor(extra.widget_color || "#6366f1");
+        setWidgetColor(extra.widget_color || "#f59e0b");
         setWidgetTheme(extra.widget_theme || "dark");
         setQuickLinks(extra.quick_links || []);
       } else {
@@ -430,7 +430,7 @@ export default function BotConfigPage({ params }: PageProps) {
                             type="text"
                             value={widgetColor}
                             onChange={(e) => setWidgetColor(e.target.value)}
-                            placeholder="#6366f1"
+                            placeholder="#f59e0b"
                             className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm outline-none focus:border-indigo-500 dark:bg-slate-950 dark:text-white dark:border-slate-800"
                           />
                         </div>
