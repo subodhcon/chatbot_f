@@ -340,7 +340,7 @@ export default function BotsPage() {
           {isSuperadmin && (
             <Button
               onClick={() => { setError(null); setIsCreateOpen(true); }}
-              className="mt-6 bg-indigo-650 hover:bg-indigo-600 text-white font-semibold rounded-xl"
+              className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl"
             >
               <Plus className="h-4 w-4 mr-2" /> Create Your First Bot
             </Button>
@@ -406,7 +406,7 @@ export default function BotsPage() {
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                         bot.is_active
                           ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/30"
-                          : "bg-slate-50 dark:bg-slate-800 text-slate-650 dark:text-slate-400 border-slate-200 dark:border-slate-700"
+                          : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
                       }`}>
                         {bot.is_active ? "● Active" : "○ Inactive"}
                       </span>
@@ -425,7 +425,7 @@ export default function BotsPage() {
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-850 flex items-center justify-between gap-2">
                   <Link
                     href={`/bots/${bot.id}/config`}
-                    className="text-xs font-bold text-slate-650 hover:text-indigo-650 dark:text-slate-350 dark:hover:text-indigo-400 flex items-center gap-1.5 bg-slate-50 hover:bg-indigo-50/50 dark:bg-slate-950 dark:hover:bg-indigo-950/30 px-3.5 py-2 rounded-xl border border-slate-100 dark:border-slate-850 transition"
+                    className="text-xs font-bold text-slate-600 hover:text-indigo-600 dark:text-slate-350 dark:hover:text-indigo-400 flex items-center gap-1.5 bg-slate-50 hover:bg-indigo-50/50 dark:bg-slate-950 dark:hover:bg-indigo-950/30 px-3.5 py-2 rounded-xl border border-slate-100 dark:border-slate-850 transition"
                   >
                     <Sliders className="h-3.5 w-3.5 text-indigo-500" />
                     Configure
@@ -434,7 +434,7 @@ export default function BotsPage() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => handleCopyShareLink(bot.id)}
-                      className="text-xs font-semibold text-slate-500 hover:text-indigo-650 dark:hover:text-indigo-400 transition cursor-pointer"
+                      className="text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
                       title="Copy public chat URL"
                     >
                       {copiedBotId === bot.id ? "Copied!" : "Copy Link"}
@@ -561,7 +561,7 @@ export default function BotsPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-650">
+            <DialogTitle className="flex items-center gap-2 text-red-600">
               <Trash2 className="h-5 w-5 text-red-500" />
               Delete Chatbot
             </DialogTitle>

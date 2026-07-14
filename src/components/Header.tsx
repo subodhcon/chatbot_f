@@ -35,7 +35,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
       {/* Right Side Header Items */}
       <div className="flex items-center gap-4">
         {/* Notifications Mock */}
-        <button className="rounded-xl p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-650 dark:text-slate-400 dark:hover:text-slate-200 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-850">
+        <button className="rounded-xl p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-slate-200 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-850">
           <span className="sr-only">Notifications</span>
           <Bell className="h-5 w-5" />
         </button>

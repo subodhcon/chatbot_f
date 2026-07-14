@@ -276,7 +276,7 @@ export default function AnalyticsPage() {
               onClick={() => setDateFilter(filter)}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold capitalize transition ${
                 dateFilter === filter
-                  ? "bg-indigo-650 text-white shadow-sm"
+                  ? "bg-indigo-600 text-white shadow-sm"
                   : "text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-slate-250 cursor-pointer"
               }`}
             >
@@ -406,7 +406,7 @@ export default function AnalyticsPage() {
                   onClick={() => setTimeView(view)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition ${
                     timeView === view
-                      ? "bg-indigo-650 text-white shadow-sm"
+                      ? "bg-indigo-600 text-white shadow-sm"
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-250 cursor-pointer"
                   }`}
                 >

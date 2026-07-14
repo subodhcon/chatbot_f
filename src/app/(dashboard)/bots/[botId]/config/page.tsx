@@ -721,7 +721,7 @@ export default function BotConfigPage({ params }: PageProps) {
                               }
                             ]);
                           }}
-                          className="text-xs font-bold gap-1.5 border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400"
+                          className="text-xs font-bold gap-1.5 border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400"
                         >
                           <Sparkles className="h-4 w-4" />
                           Apply Gaya Ji Tourism Template
