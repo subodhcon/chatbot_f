@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { Bot, ShieldAlert, ArrowLeft } from "lucide-react";
+import { ShieldAlert, ArrowLeft } from "lucide-react";
+import { BrandMark } from "@/components/Brand";
 
 export default function RegisterPage() {
   return (
@@ -16,9 +17,7 @@ export default function RegisterPage() {
         
         {/* Logo / Header */}
         <div className="flex flex-col items-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-500 text-white shadow-lg shadow-violet-600/25">
-            <Bot className="h-6 w-6" />
-          </div>
+          <BrandMark />
           <h2 className="mt-6 text-2xl font-extrabold tracking-tight text-white flex items-center gap-2 justify-center">
             Registration Closed
           </h2>

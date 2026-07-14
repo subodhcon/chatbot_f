@@ -9,22 +9,35 @@ import * as LucideIcons from "lucide-react";
 import { publicChatService, PublicBot, CitationItem } from "@/services/public_chat";
 import MessageCitations from "@/components/MessageCitations";
 import FeedbackComponent from "@/components/FeedbackComponent";
+import { useChatStream } from "@/hooks/useChatStream";
 
 export default function GuestChatPage() {
   const params = useParams();
   const botId = params?.botId as string;
 
   const [bot, setBot] = useState<PublicBot | null>(null);
-  const [messages, setMessages] = useState<Array<{ id?: string; sender: string; content: string; time?: string; citations?: CitationItem[]; escalation_eligible?: boolean }>>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [welcomeMessage, setWelcomeMessage] = useState<string>("");
+
+  const {
+    messages,
+    setMessages,
+    sendMessage: sendStreamMessage,
+    clearMessages,
+    isTyping,
+    isStreaming,
+    error: wsError,
+  } = useChatStream(conversationId, welcomeMessage);
   
   // UI states
   const [inputMessage, setInputMessage] = useState("");
   const [isLoadingBot, setIsLoadingBot] = useState(true);
-  const [isReplying, setIsReplying] = useState(false);
+  const [isReplyingState, setIsReplyingState] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [consecutiveFailures, setConsecutiveFailures] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const isReplying = isStreaming || isTyping || isReplyingState;
 
   const connectMenuItems = [
     { label: "Book a Meeting", query: "I want to Book a Meeting", desc: "Schedule a call", icon: Calendar },
@@ -50,34 +63,72 @@ export default function GuestChatPage() {
     setMenuOpen(false);
   };
 
-  const formatMessageContent = (text: string) => {
-    if (!text) return "";
-    
-    // Split by newlines
-    const lines = text.split("\n");
-    let inList = false;
-    const formattedLines = [];
+  const renderMessageContent = (text: string, msgCitations: CitationItem[] = []) => {
+    if (!text) return null;
 
-    for (let line of lines) {
-      let trimmed = line.trim();
-      
-      // Detect list items
-      if (trimmed.startsWith("* ") || trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
-        // Strip the list token
-        const cleanText = trimmed.replace(/^[\*\-\•]\s+/, "");
-        
-        // Parse bold markers inside the list item
-        const parsedText = cleanText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-        
-        formattedLines.push(`<li class="ml-4 list-disc pl-1 my-1">${parsedText}</li>`);
+    // Split text into paragraphs
+    const paragraphs = text.split("\n");
+
+    return paragraphs.map((paragraph, pIdx) => {
+      const trimmed = paragraph.trim();
+      if (!trimmed) return <p key={pIdx} className="min-h-[1em]" />;
+
+      // 1. Detect list item
+      const isListItem = trimmed.startsWith("* ") || trimmed.startsWith("- ") || trimmed.startsWith("• ");
+      const cleanText = isListItem ? trimmed.replace(/^[\*\-\•]\s+/, "") : paragraph;
+
+      // 2. Parse bold text and citation links in this line
+      const tokens: React.ReactNode[] = [];
+      const parts = cleanText.split(/(\*\*.*?\*\*|\[\d+\])/g);
+
+      parts.forEach((part, tokenIdx) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          // Bold
+          const boldText = part.slice(2, -2);
+          tokens.push(<strong key={tokenIdx}>{boldText}</strong>);
+        } else if (part.startsWith("[") && part.endsWith("]")) {
+          // Citation index e.g. [1] or [2]
+          const citeNumStr = part.slice(1, -1);
+          const citeIdx = parseInt(citeNumStr, 10);
+          
+          if (!isNaN(citeIdx) && msgCitations && msgCitations[citeIdx - 1]) {
+            const citation = msgCitations[citeIdx - 1];
+            tokens.push(
+              <a
+                key={tokenIdx}
+                href={citation.url || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center h-4 min-w-[16px] px-1 text-[8px] font-bold rounded bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition mx-0.5 align-top"
+                title={citation.source_name}
+              >
+                {citeIdx}
+              </a>
+            );
+          } else {
+            // Render index bracket as plain text if no citation metadata matches
+            tokens.push(part);
+          }
+        } else {
+          // Plain text
+          tokens.push(part);
+        }
+      });
+
+      if (isListItem) {
+        return (
+          <li key={pIdx} className="ml-4 list-disc pl-1 my-1">
+            {tokens}
+          </li>
+        );
       } else {
-        // Parse bold markers in normal paragraph text
-        const parsedText = line.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-        formattedLines.push(`<p class="my-1 min-h-[1em]">${parsedText}</p>`);
+        return (
+          <p key={pIdx} className="my-1">
+            {tokens}
+          </p>
+        );
       }
-    }
-
-    return formattedLines.join("");
+    });
   };
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -116,10 +167,7 @@ export default function GuestChatPage() {
         if (cachedSession) {
           const parsed = JSON.parse(cachedSession);
           setConversationId(parsed.conversation_id);
-          // Insert initial welcome message
-          setMessages([
-            { sender: "bot", content: botRes.data.greeting_message, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-          ]);
+          setWelcomeMessage(botRes.data.greeting_message || "");
         } else {
           const browserInfo = typeof window !== "undefined" ? {
             language: navigator.language,
@@ -135,9 +183,7 @@ export default function GuestChatPage() {
               conversation_id: sessionRes.data.conversation_id,
               user_identifier: sessionRes.data.user_identifier
             }));
-            setMessages([
-              { sender: "bot", content: sessionRes.data.welcome_message, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-            ]);
+            setWelcomeMessage(sessionRes.data.welcome_message || "");
           } else {
             setError(sessionRes.error?.message || "Failed to initialize conversation session.");
           }
@@ -156,13 +202,16 @@ export default function GuestChatPage() {
     if (!conversationId || isReplying) return;
     setMenuOpen(false);
     
-    // Add user message to UI
+    // Attempt streaming dispatch first
+    const sent = sendStreamMessage(queryText);
+    if (sent) return;
+
+    // Fallback to REST POST
+    setIsReplyingState(true);
     setMessages((prev) => [
       ...prev,
       { sender: "user", content: queryText, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
     ]);
-
-    setIsReplying(true);
 
     try {
       const res = await publicChatService.sendGuestMessage(conversationId, queryText);
@@ -195,7 +244,7 @@ export default function GuestChatPage() {
         { sender: "bot", content: "A connection issue occurred. Please check your network." }
       ]);
     } finally {
-      setIsReplying(false);
+      setIsReplyingState(false);
     }
   };
 
@@ -207,13 +256,16 @@ export default function GuestChatPage() {
     const userText = inputMessage.trim();
     setInputMessage("");
     
-    // Add user message to UI
+    // Attempt streaming dispatch first
+    const sent = sendStreamMessage(userText);
+    if (sent) return;
+
+    // Fallback to REST POST
+    setIsReplyingState(true);
     setMessages((prev) => [
       ...prev,
       { sender: "user", content: userText, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
     ]);
-
-    setIsReplying(true);
 
     try {
       const res = await publicChatService.sendGuestMessage(conversationId, userText);
@@ -246,7 +298,7 @@ export default function GuestChatPage() {
         { sender: "bot", content: "A connection issue occurred. Please check your network." }
       ]);
     } finally {
-      setIsReplying(false);
+      setIsReplyingState(false);
     }
   };
 
@@ -382,10 +434,9 @@ export default function GuestChatPage() {
                           }
                     }
                   >
-                    <div 
-                      className="text-xs leading-relaxed space-y-1.5"
-                      dangerouslySetInnerHTML={{ __html: formatMessageContent(msg.content) }}
-                    />
+                    <div className="text-xs leading-relaxed space-y-1.5">
+                      {renderMessageContent(msg.content, msg.citations)}
+                    </div>
                     {isBot && <MessageCitations citations={msg.citations} />}
                     {isBot && msg.id && conversationId && (
                       <FeedbackComponent
