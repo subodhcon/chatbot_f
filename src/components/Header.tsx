@@ -46,7 +46,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
         {/* Profile Details */}
         <div className="flex items-center gap-2.5">
           <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-sm font-bold text-slate-850 dark:text-slate-200">{displayName}</span>
+          <span className="hidden sm:inline text-sm font-bold text-slate-850 dark:text-slate-200">{displayName}</span>
         </div>
       </div>
     </header>

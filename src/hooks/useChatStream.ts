@@ -27,7 +27,12 @@ export function useChatStream(conversationId: string | null, initialWelcomeMessa
 
   // Track message updates to append streaming tokens in-place
   const messagesRef = useRef<StreamMessage[]>([]);
-  messagesRef.current = messages;
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Mutable ref to access connect callback without circular hoisting issues
+  const connectRef = useRef<() => void>();
 
   // Initialize welcome message
   useEffect(() => {
@@ -140,7 +145,7 @@ export function useChatStream(conversationId: string | null, initialWelcomeMessa
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000);
           console.log(`[useChatStream] Reconnecting in ${delay}ms... (Attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts})`);
           reconnectTimeoutRef.current = setTimeout(() => {
-            connect();
+            connectRef.current?.();
           }, delay);
         } else {
           setError("Connection lost. Real-time updates are currently unavailable.");
@@ -155,6 +160,10 @@ export function useChatStream(conversationId: string | null, initialWelcomeMessa
       setError("Failed to establish real-time connection.");
     }
   }, [conversationId, disconnect]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   // Connect WebSocket on mount or when conversationId changes
   useEffect(() => {

@@ -152,7 +152,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 max-w-6xl mx-auto px-4 py-2">
       {/* ── Premium Page Header ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-7 shadow-xl border border-indigo-900/30">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-7 shadow-xl border border-indigo-900/30">
         <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-indigo-600/20 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-violet-600/20 blur-3xl pointer-events-none" />
         <div className="absolute top-4 right-6 opacity-10">
@@ -167,7 +167,7 @@ export default function DashboardPage() {
               </div>
               <div className="h-px w-16 bg-gradient-to-r from-indigo-500/60 to-transparent" />
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
               Welcome back, {user?.name || "Admin"}
             </h1>
             <p className="text-sm text-indigo-200/60 mt-1.5 max-w-lg">
@@ -178,7 +178,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Metric Cards Grid */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
             label: "Active Chatbots",
@@ -215,22 +215,22 @@ export default function DashboardPage() {
         ].map((card, i) => (
           <div
             key={i}
-            className={`rounded-xl border ${card.border} ${card.bg} p-6 backdrop-blur-sm shadow-sm flex items-center justify-between gap-4`}
+            className={`rounded-xl border ${card.border} ${card.bg} p-5 sm:p-6 backdrop-blur-sm shadow-sm flex items-center justify-between gap-4`}
           >
             <div>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">{card.label}</p>
-              <div className="mt-2.5 flex items-center min-h-[36px]">
+              <div className="mt-2 flex items-center min-h-[36px]">
                 {card.value === null ? (
                   <Loader2 className="h-6 w-6 animate-spin text-slate-450" />
                 ) : (
-                  <span className="text-3xl font-extrabold text-slate-900 dark:text-white">
+                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
                     {card.value}
                   </span>
                 )}
               </div>
             </div>
-            <div className={`h-11 w-11 rounded-xl ${card.bg} border ${card.border} flex items-center justify-center shrink-0`}>
-              <card.icon className={`h-5 w-5 ${card.color}`} />
+            <div className={`h-10 w-10 sm:h-11 sm:w-11 rounded-xl ${card.bg} border ${card.border} flex items-center justify-center shrink-0`}>
+              <card.icon className={`h-4.5 w-4.5 sm:h-5 sm:w-5 ${card.color}`} />
             </div>
           </div>
         ))}

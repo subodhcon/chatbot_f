@@ -461,7 +461,7 @@ export default function KnowledgeBasePage() {
   return (
     <div className="space-y-8 max-w-6xl mx-auto px-4 py-2">
       {/* ── Premium Page Header ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-7 shadow-xl border border-indigo-900/30">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-7 shadow-xl border border-indigo-900/30">
         <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-indigo-600/20 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-violet-600/20 blur-3xl pointer-events-none" />
         <div className="absolute top-4 right-6 opacity-10">
@@ -476,14 +476,14 @@ export default function KnowledgeBasePage() {
               </div>
               <div className="h-px w-16 bg-gradient-to-r from-indigo-500/60 to-transparent" />
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white">Knowledge Base</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Knowledge Base</h1>
             <p className="text-sm text-indigo-200/60 mt-1.5 max-w-lg">
               Train your AI chatbots by uploading PDF / DOCX documents or crawling websites into their knowledge base.
             </p>
           </div>
 
           {bots.length > 0 ? (
-            <div className="shrink-0">
+            <div className="shrink-0 w-full md:w-auto">
               <label htmlFor="bot-select" className="block text-xs font-semibold text-indigo-300/70 mb-1.5 uppercase tracking-wider">
                 Active Chatbot
               </label>
@@ -491,7 +491,7 @@ export default function KnowledgeBasePage() {
                 id="bot-select"
                 value={selectedBotId}
                 onChange={(e) => { setSelectedBotId(e.target.value); setCurrentPage(1); setSelectedSourceIds([]); }}
-                className="bg-white/10 backdrop-blur border border-white/20 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer min-w-[220px] shadow-sm transition hover:bg-white/15"
+                className="bg-white/10 backdrop-blur border border-white/20 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer w-full md:min-w-[220px] shadow-sm transition hover:bg-white/15"
               >
                 {bots.map((b) => (
                   <option key={b.id} value={b.id} className="text-slate-900 bg-white">
@@ -516,13 +516,13 @@ export default function KnowledgeBasePage() {
               { label: "Processing", value: processingCount, icon: Zap, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
               { label: "Failed", value: failedCount, icon: XCircle, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" },
             ].map((stat) => (
-              <div key={stat.label} className={`rounded-xl ${stat.bg} border ${stat.border} p-4 backdrop-blur-sm flex items-center gap-3`}>
-                <div className={`h-9 w-9 rounded-lg ${stat.bg} border ${stat.border} flex items-center justify-center shrink-0`}>
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              <div key={stat.label} className={`rounded-xl ${stat.bg} border ${stat.border} p-3 sm:p-4 backdrop-blur-sm flex items-center gap-2 sm:gap-3`}>
+                <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-lg ${stat.bg} border ${stat.border} flex items-center justify-center shrink-0`}>
+                  <stat.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${stat.color}`} />
                 </div>
-                <div>
-                  <p className="text-xs text-white/50 font-medium">{stat.label}</p>
-                  <p className={`text-xl font-extrabold ${stat.color}`}>{stat.value}</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-white/50 font-medium truncate">{stat.label}</p>
+                  <p className={`text-lg sm:text-xl font-extrabold ${stat.color}`}>{stat.value}</p>
                 </div>
               </div>
             ))}
@@ -574,7 +574,7 @@ export default function KnowledgeBasePage() {
                 onDragLeave={isUploading ? undefined : handleDragLeave}
                 onDrop={isUploading ? undefined : handleDrop}
                 onClick={isUploading ? undefined : () => fileInputRef.current?.click()}
-                className={`relative group rounded-2xl border-2 p-12 flex flex-col items-center justify-center text-center transition-all duration-300 ${
+                className={`relative group rounded-2xl border-2 p-6 sm:p-12 flex flex-col items-center justify-center text-center transition-all duration-300 ${
                   isDragActive
                     ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20 shadow-xl shadow-indigo-500/10 scale-[1.01]"
                     : "border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-indigo-400 hover:bg-indigo-50/20 dark:hover:bg-indigo-950/10"
@@ -618,7 +618,7 @@ export default function KnowledgeBasePage() {
                 )}
               </div>
             ) : (
-              <form onSubmit={handleStartCrawl} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 space-y-5 shadow-sm">
+              <form onSubmit={handleStartCrawl} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-5 shadow-sm">
                 <div className="flex items-center gap-3 mb-1">
                   <div className="h-9 w-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center">
                     <Globe className="h-4 w-4 text-indigo-500" />
