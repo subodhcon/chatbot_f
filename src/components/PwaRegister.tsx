@@ -1,33 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, X, WifiOff } from "lucide-react";
+import { Download, X, WifiOff, Share } from "lucide-react";
 
 export default function PwaRegister() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showBanner, setShowBanner] = useState(false);
+  const [showIosTooltip, setShowIosTooltip] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // 1. Register Service Worker
-      if ("serviceWorker" in navigator) {
-        const registerSW = () => {
-          navigator.serviceWorker
-            .register("/sw.js")
-            .then((registration) => {
-              console.log("[PWA] Service Worker registered successfully:", registration.scope);
-            })
-            .catch((error) => {
-              console.warn("[PWA] Service Worker registration failed:", error);
-            });
-        };
+      // 1. Detect iOS Safari and display custom install instruction
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
+      if (isIOS && !isStandalone) {
+        setShowIosTooltip(true);
+      }
 
-        if (document.readyState === "complete") {
-          registerSW();
-        } else {
-          window.addEventListener("load", registerSW);
-        }
+      // 2. Register Service Worker
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/sw.js")
+          .then((registration) => {
+            console.log("[PWA] Service Worker registered successfully:", registration.scope);
+          })
+          .catch((error) => {
+            console.warn("[PWA] Service Worker registration failed:", error);
+          });
       }
 
       // 2. Listen for BeforeInstallPrompt event
@@ -115,6 +115,36 @@ export default function PwaRegister() {
               onClick={handleDismissClick}
               className="text-slate-500 hover:text-white p-1 rounded-lg transition shrink-0 cursor-pointer"
               aria-label="Dismiss banner"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 3. iOS Safari Custom Guidance Popup */}
+      {showIosTooltip && (
+        <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-[380px] z-50 animate-in fade-in slide-in-from-bottom-6 duration-500">
+          <div className="bg-slate-900 dark:bg-slate-900 border border-slate-800 text-white rounded-2xl p-4 shadow-[0_12px_40px_rgba(0,0,0,0.5)] flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shrink-0">
+              <Share className="h-5 w-5" />
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <h4 className="text-xs font-extrabold tracking-tight">Install on iPhone / iPad</h4>
+              <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                To install this app on your iOS device:
+              </p>
+              <ol className="text-[10px] text-slate-400 mt-2 list-decimal pl-4 space-y-1">
+                <li>Tap the <span className="text-white font-semibold">Share</span> button in Safari.</li>
+                <li>Scroll down and select <span className="text-white font-semibold">"Add to Home Screen"</span>.</li>
+              </ol>
+            </div>
+
+            <button 
+              onClick={() => setShowIosTooltip(false)}
+              className="text-slate-500 hover:text-white p-1 rounded-lg transition shrink-0 cursor-pointer"
+              aria-label="Dismiss iOS guidance"
             >
               <X className="h-4 w-4" />
             </button>
